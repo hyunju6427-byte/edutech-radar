@@ -53,7 +53,7 @@
   .nav a .cnt{font-size:12px; color:var(--ink-faint); background:var(--app); border-radius:20px; padding:1px 9px; font-variant-numeric:tabular-nums}
   .nav a.on .cnt{background:#fff; color:var(--brand-ink)}
   .sitenav{display:flex; flex-direction:column; gap:1px; margin:2px 0 0 4px; padding-left:9px; border-left:1px solid var(--line)}
-  .sitenav a{padding:8px 10px; font-size:13px; border-radius:9px}
+  .sitenav a{padding:8px 10px; font-size:13px; border-radius:9px; cursor:pointer}
   .sitenav a .l{gap:8px}
   .sitenav a .sd{width:9px;height:9px;border-radius:3px; flex:0 0 auto}
   .sitenav a.on{background:var(--brand-bg); color:var(--brand-ink); font-weight:600}
@@ -85,6 +85,7 @@
   .dateinput{font:inherit; font-size:12.5px; border:1px dashed var(--line-strong); border-radius:7px; padding:3px 6px;
     color:var(--ink-soft); background:var(--surface); width:132px}
   .dateinput:hover{border-color:var(--brand)} .dateinput:focus{outline:2px solid var(--brand); outline-offset:1px; border-style:solid}
+  .dateinput.edited{border-style:solid; border-color:var(--brand); color:var(--brand-ink); font-weight:600}
   .btn{border:1px solid var(--line-strong); background:var(--surface); color:var(--ink); border-radius:10px;
     padding:8px 13px; font:inherit; font-size:13px; cursor:pointer}
   .btn:hover{border-color:var(--brand); color:var(--brand)}
@@ -98,6 +99,28 @@
   th.num,td.num{text-align:center; font-variant-numeric:tabular-nums; white-space:nowrap; width:66px}
   th.date,td.date{white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--ink-soft); width:118px}
   th.copy,td.copy{text-align:center; width:64px}
+  th.acts,td.acts{text-align:center; width:112px; white-space:nowrap}
+  .actbtn{border:1px solid var(--line-strong); background:var(--surface); border-radius:7px; padding:4px 7px;
+    cursor:pointer; font-size:13px; line-height:1; margin:0 1px}
+  .actbtn:hover{border-color:var(--brand)}
+  tr.rowdel{opacity:.5}
+  tr.rowdel .title{text-decoration:line-through}
+  .t-del{color:#c2413f; background:#fbe9e9}
+  .chk{display:inline-flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-soft); cursor:pointer; margin-left:4px}
+  .btn.primary{background:var(--grad); color:#fff; border:0}
+  .btn.primary:hover{filter:brightness(1.05); color:#fff}
+  .btn.danger{border-color:#e2b4b4; color:#c2413f}
+  .btn.danger:hover{border-color:#c2413f; color:#c2413f}
+  .modal-back{position:fixed; inset:0; background:rgba(20,24,44,.4); display:flex; align-items:center; justify-content:center; z-index:70; padding:20px}
+  .modal{background:var(--surface); border-radius:18px; padding:22px; width:min(460px,100%); box-shadow:0 20px 60px rgba(20,24,44,.3)}
+  .modal h3{margin:0 0 2px; font-size:16px}
+  .modal .m-sub{color:var(--ink-faint); font-size:12px; margin-bottom:14px}
+  .modal label{display:block; font-size:12.5px; color:var(--ink-soft); margin-bottom:12px}
+  .modal input{display:block; width:100%; margin-top:5px; font:inherit; font-size:14px; color:var(--ink);
+    border:1px solid var(--line-strong); border-radius:9px; padding:9px 11px; background:var(--surface)}
+  .modal input:focus{outline:2px solid var(--brand); outline-offset:1px}
+  .modal .m-row{display:flex; gap:12px} .modal .m-row label{flex:1}
+  .modal .m-actions{display:flex; align-items:center; gap:8px; margin-top:6px}
   tbody td{padding:13px 15px; border-bottom:1px solid var(--line); vertical-align:middle}
   tbody tr:last-child td{border-bottom:0}
   tbody tr:hover{background:#faf9fe}
@@ -163,8 +186,8 @@
 </head><body>
 <div class="app">
   <aside class="side" id="side">
-    <div class="brandrow"><div class="logo">V</div><div class="name">연수 레이더</div></div>
-    <div class="headline">경쟁사 신규 연수,<br><span class="serif">한 눈에.</span></div>
+    <div class="brandrow"><div class="logo">V</div><div class="name">신규 리스트</div></div>
+    <div class="headline">경쟁사 신규 연수 리스트</div>
     <div class="tag">티처빌 · 아이스크림 · 한국교원 · 사제동행 외<br>경쟁 연수원 신규·종료를 한 화면에</div>
     <div class="daterow"><span class="d" id="today"></span><span class="live"><span class="dot"></span>실시간</span></div>
     <button class="refresh" id="refresh">↻ 데이터 새로고침</button>
@@ -206,14 +229,19 @@
             <option value="4">4학점</option>
             <option value="etc">기타</option>
           </select>
+          <span class="lab">월</span>
+          <select class="sel" id="monthSel"><option value="">전체</option></select>
+          <span class="lab">주제</span>
+          <select class="sel" id="topicSel"><option value="">전체</option></select>
+          <label class="chk"><input type="checkbox" id="showDeleted"> 삭제 항목 표시</label>
           <span class="spacer"></span>
-          <button class="btn" id="exportDates">📅 수동입력 내보내기</button>
+          <button class="btn" id="exportEdits">📝 수정분 내보내기</button>
           <button class="btn" id="copyAll">⧉ 표시 항목 복사</button>
         </div>
       </div>
       <div class="crumb"><span class="u" id="crumbSite">전체</span> › <b>연수</b> <b id="crumbCount">0</b>건 · <span id="updated"></span></div>
       <div class="board"><table>
-        <thead><tr><th>과정명</th><th class="num credit">학점</th><th class="num chasi">차시</th><th class="topic">주제</th><th class="tutor">강사명</th><th class="date">서비스일자</th><th class="copy"></th></tr></thead>
+        <thead><tr><th>과정명</th><th class="num credit">학점</th><th class="num chasi">차시</th><th class="topic">주제</th><th class="tutor">강사명</th><th class="date">서비스일자</th><th class="acts">관리</th></tr></thead>
         <tbody id="rows"></tbody></table>
         <div class="empty hidden" id="empty"><strong>조건에 맞는 과정이 없습니다</strong>필터를 줄이거나 검색어를 지워보세요.</div>
       </div>
@@ -230,6 +258,26 @@
     </section>
   </main>
 </div>
+<div class="modal-back" id="editBack" hidden>
+  <div class="modal">
+    <h3>과정 편집</h3>
+    <div class="m-sub" id="m_sub"></div>
+    <label>과정명<input id="m_name" type="text"></label>
+    <div class="m-row">
+      <label>학점<input id="m_credit" type="text"></label>
+      <label>차시<input id="m_hours" type="text"></label>
+    </div>
+    <label>주제<input id="m_topic" type="text"></label>
+    <label>서비스일자<input id="m_date" type="date"></label>
+    <div class="m-actions">
+      <button class="btn danger" id="m_delete">삭제</button>
+      <span class="spacer"></span>
+      <button class="btn" id="m_revert">되돌리기</button>
+      <button class="btn" id="m_cancel">취소</button>
+      <button class="btn primary" id="m_save">저장</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -244,12 +292,17 @@ function toast(m){const t=document.getElementById("toast");t.textContent=m;t.cla
 function copyText(t){if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).then(()=>toast("클립보드에 복사됨")).catch(()=>fb(t));}else fb(t);}
 function fb(t){const a=document.createElement("textarea");a.value=t;a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.select();try{document.execCommand("copy");toast("클립보드에 복사됨");}catch(e){toast("복사 실패");}document.body.removeChild(a);}
 
-const state={site:"",q:"",sort:"date",status:"all",credit:"all"};
+const state={site:"",q:"",sort:"date",status:"all",credit:"all",month:"",topicF:"",showDeleted:false};
 let currentRows=[];
-const MANUAL_KEY="edutech_manual_dates";
-let manualDates={};
-try{ manualDates=JSON.parse(localStorage.getItem(MANUAL_KEY)||"{}"); }catch(e){ manualDates={}; }
-function saveManual(){ try{ localStorage.setItem(MANUAL_KEY, JSON.stringify(manualDates)); }catch(e){} }
+const MANUAL_KEY="edutech_manual_dates";  // 예전 버전 호환(있으면 서비스일자로 흡수)
+const OV_KEY="edutech_overrides";
+let overrides={edits:{},deletes:[]};
+try{ const o=JSON.parse(localStorage.getItem(OV_KEY)||"{}"); overrides.edits=o.edits||{}; overrides.deletes=o.deletes||[]; }catch(e){}
+try{ const m=JSON.parse(localStorage.getItem(MANUAL_KEY)||"{}");  // 옛 수동날짜 → edits.서비스일자로 이관
+     Object.keys(m).forEach(k=>{ overrides.edits[k]=Object.assign({서비스일자:m[k]}, overrides.edits[k]||{}); }); }catch(e){}
+function saveOv(){ try{ localStorage.setItem(OV_KEY, JSON.stringify(overrides)); }catch(e){} }
+function effective(d){ const e=overrides.edits[d._key]; return e?Object.assign({}, d, e):d; }  // 편집 적용본
+const delSet=()=>new Set(overrides.deletes);
 const COPY_COLS=["연수원","과정명","학점","시간","주제","강사명","서비스일자","서비스상태"];
 const tsvOf=d=>COPY_COLS.map(k=>String(d[k]==null?"":d[k]).replace(/[\t\n]/g," ")).join("\t");
 
@@ -266,11 +319,31 @@ function buildSiteNav(){
     a.innerHTML=`<span class="l">${dot?`<span class="sd" style="background:${color(val)}"></span>`:""}${esc(label)}</span>`+
       (cnt!=null?`<span class="cnt">${cnt.toLocaleString()}</span>`:"");
     if(val===state.site)a.className="on";
-    a.onclick=()=>{state.site=val;showView("list");syncSiteNav();render();};return a;};
+    a.onclick=()=>{state.site=val; state.month=""; state.topicF=""; showView("list"); syncSiteNav(); buildFilters(); render();};return a;};
   box.innerHTML=""; box.appendChild(mk("","전체",false,DATA.length));
   sites.forEach(s=>box.appendChild(mk(s,s,true,counts[s])));
 }
 function syncSiteNav(){document.querySelectorAll("#siteNav a").forEach(a=>a.classList.toggle("on",a.dataset.site===state.site));}
+
+// 월/주제 필터 옵션 채우기 (현재 선택 연수원 기준, 주제엔 개수 표시)
+function buildFilters(){
+  const del=delSet();
+  const scope=DATA.filter(d=>!del.has(d._key)).map(effective).filter(d=>!state.site||d.연수원===state.site);
+  // 월(서비스일자 YYYY-MM) 내림차순
+  const months={};
+  scope.forEach(d=>{const m=String(d.서비스일자||"").match(/^(\d{4}-\d{2})/); if(m)months[m[1]]=(months[m[1]]||0)+1;});
+  const mSel=document.getElementById("monthSel");
+  mSel.innerHTML='<option value="">전체 월</option>'+Object.keys(months).sort().reverse()
+    .map(m=>`<option value="${m}">${m} (${months[m]})</option>`).join("");
+  mSel.value=state.month;
+  // 주제 + 개수
+  const topics={};
+  scope.forEach(d=>{const t=d.주제||""; if(t)topics[t]=(topics[t]||0)+1;});
+  const tSel=document.getElementById("topicSel");
+  tSel.innerHTML='<option value="">전체 주제</option>'+Object.keys(topics).sort((a,b)=>topics[b]-topics[a])
+    .map(t=>`<option value="${esc(t)}">${esc(t)} (${topics[t]})</option>`).join("");
+  tSel.value=state.topicF;
+}
 
 function showView(v){
   document.getElementById("view-list").classList.toggle("hidden",v!=="list");
@@ -281,10 +354,14 @@ function showView(v){
 
 function apply(){
   const q=state.q.trim().toLowerCase();
-  let rows=DATA.filter(d=>!state.site||d.연수원===state.site)
+  const del=delSet();
+  let rows=DATA.filter(d=>state.showDeleted || !del.has(d._key)).map(effective)
+    .filter(d=>!state.site||d.연수원===state.site)
     .filter(d=>state.status==="all"||(state.status==="live"?d.서비스상태!=="종료":d.서비스상태==="종료"))
     .filter(d=>{ if(state.credit==="all")return true; const c=String(d.학점||"").trim();
       return state.credit==="etc" ? !["1","2","3","4"].includes(c) : c===state.credit; })
+    .filter(d=>!state.month || String(d.서비스일자||"").startsWith(state.month))
+    .filter(d=>!state.topicF || (d.주제||"")===state.topicF)
     .filter(d=>!q||(d.과정명+" "+(d.강사명||"")).toLowerCase().includes(q));
   const dkey=s=>{ s=String(s||""); let m=s.match(/^(\d{4})-(\d{2})-(\d{2})/); if(m)return m[1]+m[2]+m[3];
     m=s.match(/^(\d{4})-(\d{2})/); if(m)return m[1]+m[2]+"00";
@@ -296,27 +373,36 @@ function apply(){
   return rows;
 }
 function render(){
-  DATA.forEach(d=>{ if(!d.서비스일자 && manualDates[d._key]) d.서비스일자=manualDates[d._key]; });  // 수동입력 반영
   const rows=apply(); currentRows=rows;
+  const del=delSet();
   document.getElementById("rows").innerHTML=rows.map((d,i)=>{
     const ended=d.서비스상태==="종료";
+    const isDel=del.has(d._key);
     const tag=ended?'<span class="tag2 t-end">종료</span>':'';
-    return `<tr>`+
+    const delTag=isDel?'<span class="tag2 t-del">삭제됨</span>':'';
+    return `<tr${isDel?' class="rowdel"':''}>`+
       `<td class="name" style="--rc:${color(d.연수원)};border-left:3px solid ${color(d.연수원)}">`+
         `<span class="src"><span class="d" style="background:${color(d.연수원)}"></span>${esc(d.연수원)}</span><br>`+
-        `<span class="title"${ended?' style="color:#9198ad"':''}>${esc(d.과정명)}</span>${tag}</td>`+
+        `<span class="title"${ended?' style="color:#9198ad"':''}>${esc(d.과정명)}</span>${tag}${delTag}</td>`+
       `<td class="num credit">${d.학점?esc(d.학점):'<span class="muted">–</span>'}</td>`+
       `<td class="num chasi">${d.시간?esc(d.시간):'<span class="muted">–</span>'}</td>`+
       `<td class="topic">${d.주제?`<span class="topic-badge" style="background:${topicColor(d.주제)}1f;color:${topicColor(d.주제)}">${esc(d.주제)}</span>`:'<span class="muted">–</span>'}</td>`+
       `<td class="tutor">${d.강사명?esc(d.강사명):'<span class="muted">미확인</span>'}</td>`+
-      `<td class="date">${d.서비스일자?esc(d.서비스일자):'<input type="date" class="dateinput" data-key="'+esc(d._key)+'" title="서비스일자 직접 입력">'}</td>`+
-      `<td class="copy"><button class="copybtn" data-i="${i}">복사</button></td></tr>`;
+      `<td class="date">${d.서비스일자?esc(d.서비스일자):'<span class="muted">입력</span>'}</td>`+
+      `<td class="acts">`+
+        `<button class="actbtn" data-act="edit" data-key="${esc(d._key)}" title="편집">✏️</button>`+
+        `<button class="actbtn" data-act="del" data-key="${esc(d._key)}" title="삭제/복구">🗑</button>`+
+        `<button class="actbtn" data-act="copy" data-i="${i}" title="복사">⧉</button>`+
+      `</td></tr>`;
   }).join("");
   document.getElementById("empty").classList.toggle("hidden",rows.length>0);
   document.getElementById("navTotal").textContent=DATA.length.toLocaleString();
   document.getElementById("crumbCount").textContent=rows.length.toLocaleString();
   document.getElementById("crumbSite").textContent=state.site||"전체";
-  document.getElementById("foot").textContent=`표시 ${rows.length.toLocaleString()}개 · 전체 ${DATA.length.toLocaleString()}개 · 데이터 출처: 각 연수원 공개 과정 목록`;
+  const nEdit=Object.keys(overrides.edits).length, nDel=overrides.deletes.length;
+  document.getElementById("foot").textContent=
+    `표시 ${rows.length.toLocaleString()}개 · 전체 ${DATA.length.toLocaleString()}개`+
+    (nEdit||nDel?` · 수정 ${nEdit} · 삭제 ${nDel} (내보내기로 영구반영)`:``);
 }
 
 function renderReport(){
@@ -351,22 +437,67 @@ document.getElementById("q").oninput=e=>{state.q=e.target.value;render();};
 document.getElementById("sortSel").onchange=e=>{state.sort=e.target.value;render();};
 document.getElementById("statSel").onchange=e=>{state.status=e.target.value;render();};
 document.getElementById("creditSel").onchange=e=>{state.credit=e.target.value;render();};
-document.getElementById("rows").addEventListener("click",e=>{const b=e.target.closest(".copybtn");if(!b)return;
-  const d=currentRows[+b.dataset.i];if(d)copyText(tsvOf(d));});
-document.getElementById("rows").addEventListener("change",e=>{
-  const inp=e.target.closest(".dateinput"); if(!inp) return;
-  const key=inp.dataset.key, val=inp.value;
-  if(val){ manualDates[key]=val; } else { delete manualDates[key]; }
-  saveManual();
-  const rec=DATA.find(d=>d._key===key); if(rec){ rec.서비스일자=val; if(val.length>=7)rec.신규오픈월=val.slice(0,7); }
-  toast(val?"서비스일자 입력됨 (이 브라우저에 저장)":"입력 취소");
-  render();
+document.getElementById("monthSel").onchange=e=>{state.month=e.target.value;render();};
+document.getElementById("topicSel").onchange=e=>{state.topicF=e.target.value;render();};
+document.getElementById("showDeleted").onchange=e=>{state.showDeleted=e.target.checked;render();};
+
+// 행 액션(편집/삭제/복사) 위임
+document.getElementById("rows").addEventListener("click",e=>{
+  const b=e.target.closest(".actbtn"); if(!b) return;
+  const act=b.dataset.act;
+  if(act==="copy"){ const d=currentRows[+b.dataset.i]; if(d)copyText(tsvOf(d)); return; }
+  const key=b.dataset.key;
+  if(act==="del"){
+    const i=overrides.deletes.indexOf(key);
+    if(i>=0){ overrides.deletes.splice(i,1); toast("삭제 취소(복구)"); }
+    else { overrides.deletes.push(key); toast("삭제 표시됨 — 내보내기로 영구반영"); }
+    saveOv(); render(); return;
+  }
+  if(act==="edit"){ openEdit(key); }
 });
-document.getElementById("exportDates").onclick=()=>{
-  const n=Object.keys(manualDates).length;
-  if(!n){ toast("입력된 수동 날짜가 없습니다"); return; }
-  copyText(JSON.stringify(manualDates,null,0));
-  toast(`수동입력 ${n}건 복사됨 — data/manual_dates.json 에 붙여넣기`);
+
+// ── 편집 모달 ──
+let editKey=null;
+function openEdit(key){
+  const orig=DATA.find(d=>d._key===key); if(!orig) return;
+  const d=effective(orig); editKey=key;
+  document.getElementById("m_name").value=d.과정명||"";
+  document.getElementById("m_credit").value=d.학점||"";
+  document.getElementById("m_hours").value=d.시간||"";
+  document.getElementById("m_topic").value=d.주제||"";
+  document.getElementById("m_date").value=/^\d{4}-\d{2}-\d{2}$/.test(d.서비스일자||"")?d.서비스일자:"";
+  document.getElementById("m_sub").textContent=`${d.연수원} · ${(orig.과정명||"").slice(0,40)}`;
+  document.getElementById("editBack").hidden=false;
+}
+function closeEdit(){ document.getElementById("editBack").hidden=true; editKey=null; }
+document.getElementById("m_cancel").onclick=closeEdit;
+document.getElementById("editBack").onclick=e=>{ if(e.target.id==="editBack") closeEdit(); };
+document.getElementById("m_save").onclick=()=>{
+  if(!editKey) return;
+  const e={ 과정명:document.getElementById("m_name").value.trim(),
+            학점:document.getElementById("m_credit").value.trim(),
+            시간:document.getElementById("m_hours").value.trim(),
+            주제:document.getElementById("m_topic").value.trim(),
+            서비스일자:document.getElementById("m_date").value };
+  overrides.edits[editKey]=e; saveOv(); render(); closeEdit(); toast("수정됨 — 내보내기로 영구반영");
+};
+document.getElementById("m_revert").onclick=()=>{
+  if(!editKey) return;
+  delete overrides.edits[editKey];
+  const i=overrides.deletes.indexOf(editKey); if(i>=0) overrides.deletes.splice(i,1);
+  saveOv(); render(); closeEdit(); toast("원본으로 되돌림");
+};
+document.getElementById("m_delete").onclick=()=>{
+  if(!editKey) return;
+  if(overrides.deletes.indexOf(editKey)<0) overrides.deletes.push(editKey);
+  saveOv(); render(); closeEdit(); toast("삭제 표시됨 — 내보내기로 영구반영");
+};
+
+document.getElementById("exportEdits").onclick=()=>{
+  const nEdit=Object.keys(overrides.edits).length, nDel=overrides.deletes.length;
+  if(!nEdit && !nDel){ toast("수정/삭제한 내용이 없습니다"); return; }
+  copyText(JSON.stringify(overrides,null,0));
+  toast(`수정 ${nEdit} · 삭제 ${nDel} 복사됨 — data/overrides.json 에 붙여넣기`);
 };
 document.getElementById("copyAll").onclick=()=>{if(!currentRows.length){toast("복사할 항목이 없습니다");return;}
   copyText(COPY_COLS.join("\t")+"\n"+currentRows.map(tsvOf).join("\n"));};
@@ -374,6 +505,6 @@ document.querySelectorAll(".nav a[data-view]").forEach(a=>a.onclick=()=>{ if(a.d
 document.getElementById("refresh").onclick=()=>{render();toast("최신 데이터로 갱신했습니다");};
 document.getElementById("aiBtn").onclick=()=>toast("AI 인사이트는 준비 중입니다");
 
-fetch('data/courses.json',{cache:'no-store'}).then(r=>r.json()).then(rows=>{DATA=rows||[];buildSiteNav();render();}).catch(e=>{DATA=[];buildSiteNav();render();toast('데이터를 불러오지 못했습니다');});
+fetch('data/courses.json',{cache:'no-store'}).then(r=>r.json()).then(rows=>{DATA=rows||[];buildSiteNav();buildFilters();render();}).catch(e=>{DATA=[];buildSiteNav();buildFilters();render();toast('데이터를 불러오지 못했습니다');});
 </script>
 </body></html>

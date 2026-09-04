@@ -28,6 +28,10 @@ CLEAN_NEW_BEFORE = ''
 BULK_THRESHOLD = 30
 # 대시보드에서 내보낸 수동 서비스일자({_key: "YYYY-MM-DD"})를 매 실행 때 반영.
 MANUAL_DATES_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'manual_dates.json')
+# 대시보드에서 내보낸 편집/삭제 내역을 매 실행 때 반영.
+#   {"edits": {"_key": {"과정명":..,"학점":..,"시간":..,"주제":..,"서비스일자":..}},
+#    "deletes": ["_key", ...]}
+OVERRIDES_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'overrides.json')
 
 def today(): return datetime.date.today().isoformat()
 def norm(s): return re.sub(r'\s+', '', str(s or '')).lower()
@@ -127,6 +131,31 @@ def main():
                 print(f'[수동입력] 서비스일자 {applied}건 반영')
         except Exception as e:
             print(f'[수동입력] manual_dates.json 처리 오류: {e}')
+
+    # ── 편집/삭제 내역 반영(대시보드에서 내보낸 overrides.json) ──
+    if os.path.exists(OVERRIDES_PATH):
+        try:
+            with open(OVERRIDES_PATH, encoding='utf-8') as f:
+                ov = json.load(f)
+            edits = ov.get('edits', {}) or {}
+            deletes = set(ov.get('deletes', []) or [])
+            EDITABLE = ('과정명', '학점', '시간', '주제', '서비스일자')
+            ed = 0
+            for r in state:
+                e = edits.get(r['_key'])
+                if e:
+                    for k in EDITABLE:
+                        if k in e:
+                            r[k] = e[k]
+                    if e.get('서비스일자') and len(str(e['서비스일자'])) >= 7:
+                        r['신규오픈월'] = str(e['서비스일자'])[:7]
+                    ed += 1
+            before = len(state)
+            state = [r for r in state if r['_key'] not in deletes]
+            if ed or (before - len(state)):
+                print(f'[수정반영] 편집 {ed}건 / 삭제 {before - len(state)}건')
+        except Exception as e:
+            print(f'[수정반영] overrides.json 처리 오류: {e}')
 
     save(state)
     print(f'{"[백필] " if seeding else ""}신규 {total_new}건 / 총 {len(state)}건 저장')
