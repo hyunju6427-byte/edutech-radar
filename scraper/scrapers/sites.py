@@ -44,6 +44,7 @@ HSTUDY = SiteSpec(
     id_attr="onclick",
     link_sel="a",
     more_selector="",
+    http_html=True,      # hstudy는 브라우저 접속이 막혀 직접 HTTP로 HTML을 받아 파싱
 )
 
 # ── 사제동행 ── tr 행: td1=학점, td2=분야, .tableLecName=과정명/링크(classKey)
