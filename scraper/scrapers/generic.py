@@ -63,11 +63,25 @@ def run_spec(spec: SiteSpec) -> list[Course]:
     out: list[Course] = []
 
     with browser_page() as page:
-        page.goto(spec.list_url, wait_until="domcontentloaded")
+        # 느린 사이트(예: 한국교원) 대응: 60초 + 재시도 + 완화된 로딩 판정
+        page.set_default_navigation_timeout(60000)
+        nav_ok = False
+        for attempt in range(2):
+            try:
+                page.goto(spec.list_url, wait_until="commit", timeout=60000)
+                nav_ok = True
+                break
+            except Exception as e:
+                if attempt == 0:
+                    page.wait_for_timeout(3000)  # 잠깐 쉬고 한 번 더
+                else:
+                    raise e
+        if not nav_ok:
+            return out
         try:
-            page.wait_for_selector(spec.wait_selector, timeout=15000)
+            page.wait_for_selector(spec.wait_selector, timeout=25000)
         except Exception:
-            page.wait_for_timeout(3000)
+            page.wait_for_timeout(4000)  # 셀렉터 못 찾아도 일단 진행
         load_all(page, more_selector=spec.more_selector or None)
 
         for card in page.query_selector_all(spec.card):
