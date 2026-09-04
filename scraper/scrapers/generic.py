@@ -113,7 +113,10 @@ def run_spec(spec: SiteSpec) -> list[Course]:
             page.wait_for_selector(spec.wait_selector, timeout=25000)
         except Exception:
             page.wait_for_timeout(4000)
-        load_all(page, more_selector=spec.more_selector or None)
+        load_info = load_all(page, more_selector=spec.more_selector or None,
+                              card_selector=spec.card)
+        if spec.more_selector:
+            print(f"  [{spec.site}] 더보기 {load_info['clicks']}회 · 로드 {load_info['count']}개")
 
         for card in page.query_selector_all(spec.card):
             if spec.require_sel and not card.query_selector(spec.require_sel):

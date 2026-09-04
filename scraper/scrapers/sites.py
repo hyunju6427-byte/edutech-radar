@@ -15,7 +15,7 @@ TEACHERVILLE = SiteSpec(
     id_attr="data-seq",
     id_sel=".info-item",
     link_sel="a",
-    more_selector="",
+    more_selector="text=더보기, text=더 보기, .btn_more, .btn-more, .more, button.more, a.more, .list_more, .paging_more, .btnMore, .moreBtn",
 )
 
 # ── 아이스크림 ── 카드: a.tit 가진 <li> / 상세href: a.thumb_lnk 의 crsCode
@@ -28,7 +28,7 @@ ISCREAM = SiteSpec(
     field_sel=".crs_info span:nth-of-type(2)",
     meta_sel=".crs_info",              # "15차시(1학점)"
     link_sel="a",
-    more_selector="",
+    more_selector="text=더보기, text=더 보기, .btn_more, .btn-more, .more, button.more, a.more, .list_more, .paging_more, .btnMore, .moreBtn",
 )
 
 # ── 한국교원 ── td.left 카드 / ID: .photo onclick detail_view('s1898') / 분야 미표기

@@ -71,27 +71,59 @@ def browser_page(headless: bool | None = None):
             browser.close()
 
 
-def load_all(page, more_selector: str | None = None, scroll: bool = True,
-             max_rounds: int | None = None):
-    """'더보기' 버튼 반복 클릭 + 스크롤로 지연 로딩 목록을 펼친다."""
+def load_all(page, more_selector: str | None = None, card_selector: str | None = None,
+             scroll: bool = True, max_rounds: int | None = None):
+    """'더보기' 버튼 반복 클릭 + 스크롤로 전체 목록을 펼친다.
+    카드 개수가 더 늘지 않으면 종료(무한 반복 방지). {clicks, count} 반환."""
     rounds = config.MAX_LOAD_MORE if max_rounds is None else max_rounds
+    candidates = [s.strip() for s in (more_selector or "").split(",") if s.strip()]
+
+    def count():
+        if not card_selector:
+            return -1
+        try:
+            return len(page.query_selector_all(card_selector))
+        except Exception:
+            return -1
+
+    clicks = 0
+    last = count()
+    stable = 0  # 변화 없는 라운드 누적
     for _ in range(rounds):
-        changed = False
-        if more_selector:
-            btn = page.query_selector(more_selector)
-            if btn and btn.is_visible():
+        progressed = False
+        # 1) '더보기' 후보들 중 보이는 첫 버튼 클릭
+        btn = None
+        for sel in candidates:
+            try:
+                b = page.query_selector(sel)
+            except Exception:
+                b = None
+            if b and b.is_visible():
+                btn = b
+                break
+        if btn:
+            try:
+                btn.scroll_into_view_if_needed(timeout=2000)
+                btn.click(timeout=3000)
+                clicks += 1
+                progressed = True
+            except Exception:
                 try:
-                    btn.click()
-                    page.wait_for_timeout(800)
-                    changed = True
+                    page.evaluate("(el)=>el.click()", btn)
+                    clicks += 1
+                    progressed = True
                 except Exception:
                     pass
+        # 2) 스크롤(무한 스크롤 대응)
         if scroll:
-            before = page.evaluate("document.body.scrollHeight")
-            page.mouse.wheel(0, 20000)
-            page.wait_for_timeout(600)
-            after = page.evaluate("document.body.scrollHeight")
-            if after > before:
-                changed = True
-        if not changed:
+            page.mouse.wheel(0, 30000)
+        page.wait_for_timeout(900)
+        # 3) 카드가 늘었는지로 진행 판정
+        cur = count()
+        if cur > last:
+            last = cur
+            progressed = True
+        stable = 0 if progressed else stable + 1
+        if stable >= 2:   # 2회 연속 변화 없으면 종료
             break
+    return {"clicks": clicks, "count": last if last >= 0 else None}
