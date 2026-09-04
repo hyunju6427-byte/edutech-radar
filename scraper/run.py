@@ -17,6 +17,10 @@ DATA_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'courses.json'
 FULL_CATALOG_SITES = []
 GRACE_RUNS = 2   # 연속 N회 미노출 시 종료 확정
 
+# 자동 수집에서 제외할 연수원(기존 데이터는 대시보드에 그대로 남음).
+# 한국교원(hstudy)은 GitHub 서버 IP 접근이 막혀 제외. 차단 해제/국내수집 붙이면 비우면 됨.
+SKIP_SITES = ['한국교원']
+
 def today(): return datetime.date.today().isoformat()
 def norm(s): return re.sub(r'\s+', '', str(s or '')).lower()
 
@@ -39,6 +43,9 @@ def main():
     total_new = 0
 
     for name, spec in SPECS.items():
+        if name in SKIP_SITES:
+            print(f'[{name}] 자동수집 제외(SKIP_SITES) — 기존 데이터 유지')
+            continue
         try:
             courses = run_spec(spec)
         except Exception as e:
