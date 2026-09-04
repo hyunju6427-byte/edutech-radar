@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import urllib.request
 from dataclasses import dataclass
 from datetime import date
 from urllib.parse import urljoin
@@ -12,6 +13,25 @@ from scrapers.base import (browser_page, load_all, clean,
 
 _ID_IN_URL = re.compile(r"(?:classKey|courseSeq|crsId|crsCd|seq|code|id|no|key)=([\w-]+)", re.I)
 _ID_IN_CALL = re.compile(r"""['"]([\w-]+)['"]""")
+
+
+def _fetch_html(url: str) -> str:
+    """브라우저 없이 직접 HTTP GET으로 HTML을 받아온다(EUC-KR 자동 처리).
+    브라우저 자동화를 차단하는 서버 대응용."""
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                      "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "ko-KR,ko;q=0.9,en;q=0.8",
+    })
+    with urllib.request.urlopen(req, timeout=30) as r:
+        raw = r.read()
+        ct = (r.headers.get("Content-Type") or "").lower()
+    enc = "euc-kr" if ("euc-kr" in ct or "ks_c_5601" in ct) else "utf-8"
+    try:
+        return raw.decode(enc, errors="replace")
+    except Exception:
+        return raw.decode("utf-8", errors="replace")
 
 
 @dataclass
@@ -30,6 +50,7 @@ class SiteSpec:
     url_template: str = ""
     require_sel: str = ""
     more_selector: str = ""
+    http_html: bool = False   # True면 브라우저 대신 직접 HTTP로 HTML을 받아 파싱(봇 차단 우회)
 
 
 def _txt(node, sel: str) -> str:
@@ -62,26 +83,36 @@ def run_spec(spec: SiteSpec) -> list[Course]:
     this_month = today[:7]
     out: list[Course] = []
 
+    # http_html=True면 직접 HTTP로 HTML을 받아 렌더링(브라우저 자동화 차단 우회). 실패 시 goto로 폴백.
+    prefetched = None
+    if spec.http_html:
+        try:
+            prefetched = _fetch_html(spec.list_url)
+        except Exception:
+            prefetched = None
+
     with browser_page() as page:
-        # 느린 사이트(예: 한국교원) 대응: 60초 + 재시도 + 완화된 로딩 판정
         page.set_default_navigation_timeout(60000)
-        nav_ok = False
-        for attempt in range(2):
-            try:
-                page.goto(spec.list_url, wait_until="commit", timeout=60000)
-                nav_ok = True
-                break
-            except Exception as e:
-                if attempt == 0:
-                    page.wait_for_timeout(3000)  # 잠깐 쉬고 한 번 더
-                else:
-                    raise e
-        if not nav_ok:
-            return out
+        if prefetched:
+            page.set_content(prefetched, wait_until="domcontentloaded")
+        else:
+            nav_ok = False
+            for attempt in range(2):
+                try:
+                    page.goto(spec.list_url, wait_until="commit", timeout=60000)
+                    nav_ok = True
+                    break
+                except Exception as e:
+                    if attempt == 0:
+                        page.wait_for_timeout(3000)
+                    else:
+                        raise e
+            if not nav_ok:
+                return out
         try:
             page.wait_for_selector(spec.wait_selector, timeout=25000)
         except Exception:
-            page.wait_for_timeout(4000)  # 셀렉터 못 찾아도 일단 진행
+            page.wait_for_timeout(4000)
         load_all(page, more_selector=spec.more_selector or None)
 
         for card in page.query_selector_all(spec.card):
