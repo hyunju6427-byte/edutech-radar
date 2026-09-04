@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>연수 레이더 · 경쟁사 신규 연수 모니터</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brand:#6a49e6; --brand2:#3f74f0; --brand-ink:#4a2fb8; --brand-bg:#efeafe; --brand-bg2:#e7ecfe;
+    --grad:linear-gradient(105deg,#6a49e6 0%,#3f74f0 100%);
+    --ink:#1e2440; --ink-soft:#5b6178; --ink-faint:#9198ad;
+    --app:#f5f5fb; --surface:#ffffff; --line:#e9e7f3; --line-strong:#d9d5ea;
+    --fresh:#0e8a6b; --fresh-bg:#e6f5ef; --end:#9198ad; --end-bg:#eeecf5;
+    --c-티처빌:#3f74f0; --c-아이스크림:#14b8a6; --c-한국교원:#7c4ce0; --c-사제동행:#2e9e6b;
+    --c-교육사랑:#e0663a; --c-하이컨텐츠:#d24d6b; --c-T셀파:#c78a2b; --c-유니텔:#4aa0d8;
+    --c-에듀니티:#a23e9e; --c-카운피아:#5f8a2e; --c-창비:#b8862b;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{font-family:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+    color:var(--ink); background:var(--app); font-size:14.5px; line-height:1.55; -webkit-font-smoothing:antialiased}
+  .app{display:flex; min-height:100vh}
+
+  /* ── 사이드바 ── */
+  .side{width:270px; flex:0 0 270px; background:var(--surface); border-right:1px solid var(--line);
+    padding:24px 18px; position:sticky; top:0; height:100vh; overflow-y:auto; display:flex; flex-direction:column}
+  .brandrow{display:flex; align-items:center; gap:10px}
+  .logo{width:36px; height:36px; border-radius:11px; background:var(--grad); color:#fff; font-weight:700;
+    display:grid; place-items:center; font-size:19px; box-shadow:0 4px 12px rgba(106,73,230,.28)}
+  .brandrow .name{font-weight:600; font-size:15px; letter-spacing:-.01em}
+  .headline{margin:24px 0 2px; font-size:27px; font-weight:700; letter-spacing:-.03em; line-height:1.18;
+    background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent}
+  .headline .serif{font-family:"Fraunces",serif; font-style:italic; font-weight:600}
+  .tag{color:var(--ink-soft); font-size:12.5px; margin-top:12px; line-height:1.55}
+  .daterow{display:flex; align-items:center; justify-content:space-between; margin:18px 0 12px; font-size:12.5px}
+  .daterow .d{color:var(--ink)}
+  .live{display:inline-flex; align-items:center; gap:6px; color:var(--brand); font-weight:600}
+  .live .dot{width:7px;height:7px;border-radius:50%; background:var(--brand); animation:pulse 1.8s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .refresh{width:100%; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-soft);
+    border-radius:11px; padding:10px; font:inherit; font-size:13px; cursor:pointer}
+  .refresh:hover{border-color:var(--brand); color:var(--brand)}
+  .sec{margin:22px 0 8px; font-size:11px; font-weight:600; letter-spacing:.06em; color:var(--ink-faint)}
+  .nav{display:flex; flex-direction:column; gap:2px}
+  .nav a{display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:10px;
+    color:var(--ink-soft); text-decoration:none; cursor:pointer; font-size:13.5px}
+  .nav a .l{display:flex; align-items:center; gap:9px}
+  .nav a:hover{background:var(--app)}
+  .nav a.on{background:var(--brand-bg); color:var(--brand-ink); font-weight:600}
+  .nav a .cnt{font-size:12px; color:var(--ink-faint); background:var(--app); border-radius:20px; padding:1px 9px; font-variant-numeric:tabular-nums}
+  .nav a.on .cnt{background:#fff; color:var(--brand-ink)}
+  .sitenav{display:flex; flex-direction:column; gap:1px; margin:2px 0 0 4px; padding-left:9px; border-left:1px solid var(--line)}
+  .sitenav a{padding:8px 10px; font-size:13px; border-radius:9px}
+  .sitenav a .l{gap:8px}
+  .sitenav a .sd{width:9px;height:9px;border-radius:3px; flex:0 0 auto}
+  .sitenav a.on{background:var(--brand-bg); color:var(--brand-ink); font-weight:600}
+  .badge{font-size:9.5px; font-weight:700; letter-spacing:.04em; color:#fff; background:var(--grad);
+    border-radius:5px; padding:1px 6px; margin-left:6px}
+  .grow{flex:1}
+  .aibtn{margin-top:16px; width:100%; border:0; background:var(--grad); color:#fff; border-radius:13px;
+    padding:13px; font:inherit; font-weight:600; cursor:pointer; box-shadow:0 6px 16px rgba(106,73,230,.25)}
+  .aibtn:hover{filter:brightness(1.05)}
+
+  /* ── 메인 ── */
+  .main{flex:1; min-width:0; padding:24px 28px 60px}
+  .topbar{background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:16px 18px; margin-bottom:14px;
+    box-shadow:0 1px 2px rgba(30,36,64,.03)}
+  .search{display:flex; align-items:center; gap:10px; border:1.5px solid var(--line-strong); border-radius:12px; padding:11px 14px; transition:border-color .15s}
+  .search:focus-within{border-color:var(--brand)}
+  .search input{border:0; outline:0; font:inherit; flex:1; background:transparent}
+  .search .ic{color:var(--ink-faint)}
+  .controls{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:12px}
+  .lab{font-size:12.5px; color:var(--ink-faint); margin:0 2px 0 6px}
+  .seg{display:inline-flex; background:var(--app); border-radius:11px; padding:3px}
+  .seg button{border:0; background:transparent; font:inherit; font-size:13px; color:var(--ink-soft); padding:7px 14px; border-radius:9px; cursor:pointer}
+  .seg button.on{background:var(--grad); color:#fff; font-weight:600; box-shadow:0 2px 8px rgba(106,73,230,.25)}
+  .spacer{flex:1}
+  .sel{font:inherit; font-size:13px; color:var(--ink); background:var(--surface); border:1px solid var(--line-strong);
+    border-radius:10px; padding:8px 11px; cursor:pointer}
+  .sel:focus{outline:2px solid var(--brand); outline-offset:1px}
+  .topic-badge{display:inline-block; padding:2px 9px; border-radius:7px; font-size:12px; font-weight:600; line-height:1.6; white-space:nowrap}
+  .btn{border:1px solid var(--line-strong); background:var(--surface); color:var(--ink); border-radius:10px;
+    padding:8px 13px; font:inherit; font-size:13px; cursor:pointer}
+  .btn:hover{border-color:var(--brand); color:var(--brand)}
+  .crumb{display:flex; align-items:center; gap:8px; color:var(--ink-faint); font-size:13px; margin:2px 2px 12px}
+  .crumb b{color:var(--ink)} .crumb .u{color:var(--brand); font-weight:600}
+
+  .board{background:var(--surface); border:1px solid var(--line); border-radius:18px; overflow:hidden; box-shadow:0 1px 2px rgba(30,36,64,.03)}
+  table{width:100%; border-collapse:collapse}
+  thead th{position:sticky; top:0; background:#faf9fe; text-align:left; font-size:12.5px; font-weight:600;
+    color:var(--ink-soft); padding:12px 15px; border-bottom:1px solid var(--line); z-index:1}
+  th.num,td.num{text-align:center; font-variant-numeric:tabular-nums; white-space:nowrap; width:66px}
+  th.date,td.date{white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--ink-soft); width:118px}
+  th.copy,td.copy{text-align:center; width:64px}
+  tbody td{padding:13px 15px; border-bottom:1px solid var(--line); vertical-align:middle}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:#faf9fe}
+  td.name{border-left:3px solid var(--rc,transparent)}
+  .src{display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-faint); margin-bottom:3px}
+  .src .d{width:7px;height:7px;border-radius:3px}
+  .title{font-weight:500; letter-spacing:-.005em}
+  .tag2{display:inline-block; margin-left:8px; padding:1px 7px; font-size:11px; font-weight:600; border-radius:5px; vertical-align:middle}
+  .t-end{color:var(--end); background:var(--end-bg)}
+  .muted{color:var(--ink-faint)}
+  .copybtn{font:inherit; font-size:12px; color:var(--ink-soft); background:var(--surface); border:1px solid var(--line-strong);
+    border-radius:8px; padding:4px 10px; cursor:pointer}
+  .copybtn:hover{border-color:var(--brand); color:var(--brand)}
+  .empty{padding:56px 20px; text-align:center; color:var(--ink-soft)}
+  .empty strong{display:block; color:var(--ink); font-size:16px; margin-bottom:6px}
+  .foot{margin-top:14px; color:var(--ink-faint); font-size:12px}
+
+  /* ── 보고서 ── */
+  .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:14px}
+  .kpi{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:16px 18px; position:relative; overflow:hidden}
+  .kpi::after{content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--grad)}
+  .kpi .k{font-size:12.5px; color:var(--ink-soft)}
+  .kpi .v{font-size:29px; font-weight:700; letter-spacing:-.02em; margin-top:6px; font-variant-numeric:tabular-nums}
+  .kpi .v small{font-size:13px; font-weight:500; color:var(--ink-faint); margin-left:3px}
+  .report{display:grid; grid-template-columns:350px 1fr; gap:14px; align-items:start}
+  .panel{background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:20px; box-shadow:0 1px 2px rgba(30,36,64,.03)}
+  .panel h3{margin:0 0 2px; font-size:15px; font-weight:600}
+  .panel .desc{color:var(--ink-faint); font-size:12px; margin-bottom:16px}
+  .bars{display:flex; flex-direction:column; gap:12px}
+  .bar{display:grid; grid-template-columns:76px 1fr auto; align-items:center; gap:10px}
+  .bar .nm{font-size:13px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .bar .track{height:13px; background:var(--app); border-radius:20px; overflow:hidden}
+  .bar .fill{height:100%; border-radius:20px}
+  .bar .val{font-size:13px; font-variant-numeric:tabular-nums; color:var(--ink-soft); min-width:34px; text-align:right}
+  .chart{display:flex; align-items:flex-end; gap:2%; height:230px; margin-top:20px; padding-bottom:2px}
+  .col{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%}
+  .col .cv{font-size:13px; font-weight:600; color:var(--ink); margin-bottom:6px; font-variant-numeric:tabular-nums}
+  .col .cbar{width:62%; max-width:46px; background:var(--grad); border-radius:8px 8px 3px 3px; transition:height .3s}
+  .col .cx{font-size:12px; color:var(--ink-faint); margin-top:8px; font-variant-numeric:tabular-nums}
+  .recent{margin-top:16px; border-top:1px solid var(--line); padding-top:8px}
+  .recent .r{display:flex; align-items:center; gap:10px; padding:9px 2px; border-bottom:1px solid var(--line)}
+  .recent .r:last-child{border-bottom:0}
+  .recent .r .rt{flex:1; font-size:13.5px}
+  .recent .r .rs{font-size:12px; color:var(--ink-faint)}
+
+  .toast{position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:var(--ink); color:#fff;
+    font-size:13px; padding:10px 17px; border-radius:10px; opacity:0; transition:opacity .18s; pointer-events:none; z-index:60}
+  .toast.show{opacity:1}
+  .hidden{display:none !important}
+
+  @media (max-width:960px){
+    .side{position:fixed; z-index:40; transform:translateX(-100%); transition:transform .2s}
+    .side.open{transform:none}
+    .report{grid-template-columns:1fr} .kpis{grid-template-columns:repeat(2,1fr)}
+    thead{display:none} tbody td{display:block; border:0; padding:4px 15px}
+    tbody tr{display:block; padding:14px 0; border-bottom:1px solid var(--line); border-left:3px solid var(--rc,transparent)}
+    td.name{border-left:0}
+    td.credit::before{content:"학점 ";color:var(--ink-faint)} td.chasi::before{content:"차시 ";color:var(--ink-faint)} td.topic::before{content:"주제 ";color:var(--ink-faint)}
+    td.tutor::before{content:"강사 ";color:var(--ink-faint)} td.date::before{content:"서비스일자 ";color:var(--ink-faint)}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head><body>
+<div class="app">
+  <aside class="side" id="side">
+    <div class="brandrow"><div class="logo">V</div><div class="name">연수 레이더</div></div>
+    <div class="headline">경쟁사 신규 연수,<br><span class="serif">한 눈에.</span></div>
+    <div class="tag">티처빌 · 아이스크림 · 한국교원 · 사제동행 외<br>경쟁 연수원 신규·종료를 한 화면에</div>
+    <div class="daterow"><span class="d" id="today"></span><span class="live"><span class="dot"></span>실시간</span></div>
+    <button class="refresh" id="refresh">↻ 데이터 새로고침</button>
+
+    <div class="sec">CHANNEL · 경쟁사 연수</div>
+    <nav class="nav"><a data-view="list" class="on"><span class="l">📋 연수 목록</span><span class="cnt" id="navTotal">0</span></a></nav>
+    <div class="sec" style="margin-top:10px">↳ 연수원</div>
+    <div class="sitenav" id="siteNav"></div>
+
+    <div class="sec">REFERENCE · 참고</div>
+    <nav class="nav"><a data-view="report"><span class="l">📊 경쟁사 분석 보고서 <span class="badge">BETA</span></span></a></nav>
+
+    <div class="grow"></div>
+    <button class="aibtn" id="aiBtn">💬 AI 인사이트</button>
+  </aside>
+
+  <main class="main">
+    <section id="view-list">
+      <div class="topbar">
+        <div class="search"><span class="ic">🔍</span><input id="q" placeholder="검색 — 예: AI, 하브루타, 박종인"></div>
+        <div class="controls">
+          <span class="lab">정렬</span>
+          <select class="sel" id="sortSel">
+            <option value="date">최신순</option>
+            <option value="dateAsc">과거순</option>
+          </select>
+          <span class="lab">상태</span>
+          <select class="sel" id="statSel">
+            <option value="all">전체</option>
+            <option value="live">서비스중</option>
+            <option value="end">종료</option>
+          </select>
+          <span class="lab">학점</span>
+          <select class="sel" id="creditSel">
+            <option value="all">전체</option>
+            <option value="1">1학점</option>
+            <option value="2">2학점</option>
+            <option value="3">3학점</option>
+            <option value="4">4학점</option>
+            <option value="etc">기타</option>
+          </select>
+          <span class="spacer"></span>
+          <button class="btn" id="copyAll">⧉ 표시 항목 복사</button>
+        </div>
+      </div>
+      <div class="crumb"><span class="u" id="crumbSite">전체</span> › <b>연수</b> <b id="crumbCount">0</b>건 · <span id="updated"></span></div>
+      <div class="board"><table>
+        <thead><tr><th>과정명</th><th class="num credit">학점</th><th class="num chasi">차시</th><th class="topic">주제</th><th class="tutor">강사명</th><th class="date">서비스일자</th><th class="copy"></th></tr></thead>
+        <tbody id="rows"></tbody></table>
+        <div class="empty hidden" id="empty"><strong>조건에 맞는 과정이 없습니다</strong>필터를 줄이거나 검색어를 지워보세요.</div>
+      </div>
+      <p class="foot" id="foot"></p>
+    </section>
+
+    <section id="view-report" class="hidden">
+      <div class="kpis" id="kpis"></div>
+      <div class="report">
+        <div class="panel"><h3>보유 과정수</h3><div class="desc">연수원별 서비스중 과정 (전체 기간)</div><div class="bars" id="holdBars"></div></div>
+        <div class="panel"><h3>월별 신규 오픈 추이</h3><div class="desc">최근 8개월 신규 개설 수</div>
+          <div class="chart" id="trend"></div><div class="recent" id="recent"></div></div>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+let DATA = [];
+const ORDER = ["티처빌","아이스크림","한국교원","사제동행","교육사랑","하이컨텐츠","T셀파","유니텔","에듀니티","카운피아","창비"];
+const orderIdx = s => { const i=ORDER.indexOf(s); return i<0?999:i; };
+function color(s){ const v=getComputedStyle(document.documentElement).getPropertyValue('--c-'+s).trim(); return v||'#6a49e6'; }
+const TOPIC_PALETTE=["#6a49e6","#3f74f0","#14b8a6","#2e9e6b","#e0663a","#d24d6b","#c78a2b","#4aa0d8","#a23e9e","#5f8a2e","#b8862b","#7c4ce0","#0e8a6b","#c2413f","#4356c0","#2f8f8f"];
+function topicColor(t){let h=0;for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))>>>0;return TOPIC_PALETTE[h%TOPIC_PALETTE.length];}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),1400);}
+function copyText(t){if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).then(()=>toast("클립보드에 복사됨")).catch(()=>fb(t));}else fb(t);}
+function fb(t){const a=document.createElement("textarea");a.value=t;a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.select();try{document.execCommand("copy");toast("클립보드에 복사됨");}catch(e){toast("복사 실패");}document.body.removeChild(a);}
+
+const state={site:"",q:"",sort:"date",status:"all",credit:"all"};
+let currentRows=[];
+const COPY_COLS=["연수원","과정명","학점","시간","주제","강사명","서비스일자","서비스상태"];
+const tsvOf=d=>COPY_COLS.map(k=>String(d[k]==null?"":d[k]).replace(/[\t\n]/g," ")).join("\t");
+
+(function(){const n=new Date();const wd=["일","월","화","수","목","금","토"][n.getDay()];
+ document.getElementById("today").textContent=`${n.getFullYear()}년 ${n.getMonth()+1}월 ${n.getDate()}일 ${wd}요일`;
+ document.getElementById("updated").textContent="갱신: "+n.toTimeString().slice(0,5);})();
+
+/* 연수원 사이드바 */
+function buildSiteNav(){
+  const box=document.getElementById("siteNav");
+  const counts={}; DATA.forEach(d=>counts[d.연수원]=(counts[d.연수원]||0)+1);
+  const sites=Object.keys(counts).sort((a,b)=>orderIdx(a)-orderIdx(b));
+  const mk=(val,label,dot,cnt)=>{const a=document.createElement("a");a.dataset.site=val;
+    a.innerHTML=`<span class="l">${dot?`<span class="sd" style="background:${color(val)}"></span>`:""}${esc(label)}</span>`+
+      (cnt!=null?`<span class="cnt">${cnt.toLocaleString()}</span>`:"");
+    if(val===state.site)a.className="on";
+    a.onclick=()=>{state.site=val;showView("list");syncSiteNav();render();};return a;};
+  box.innerHTML=""; box.appendChild(mk("","전체",false,DATA.length));
+  sites.forEach(s=>box.appendChild(mk(s,s,true,counts[s])));
+}
+function syncSiteNav(){document.querySelectorAll("#siteNav a").forEach(a=>a.classList.toggle("on",a.dataset.site===state.site));}
+
+function showView(v){
+  document.getElementById("view-list").classList.toggle("hidden",v!=="list");
+  document.getElementById("view-report").classList.toggle("hidden",v!=="report");
+  document.querySelectorAll(".nav a[data-view]").forEach(a=>a.classList.toggle("on",a.dataset.view===v));
+  if(v==="report")renderReport();
+}
+
+function apply(){
+  const q=state.q.trim().toLowerCase();
+  let rows=DATA.filter(d=>!state.site||d.연수원===state.site)
+    .filter(d=>state.status==="all"||(state.status==="live"?d.서비스상태!=="종료":d.서비스상태==="종료"))
+    .filter(d=>{ if(state.credit==="all")return true; const c=String(d.학점||"").trim();
+      return state.credit==="etc" ? !["1","2","3","4"].includes(c) : c===state.credit; })
+    .filter(d=>!q||(d.과정명+" "+(d.강사명||"")).toLowerCase().includes(q));
+  const dkey=s=>{ s=String(s||""); let m=s.match(/^(\d{4})-(\d{2})-(\d{2})/); if(m)return m[1]+m[2]+m[3];
+    m=s.match(/^(\d{4})-(\d{2})/); if(m)return m[1]+m[2]+"00";
+    if(s.indexOf("이전")>=0)return "19000101"; return "00000000"; };
+  const by={
+    date:(a,b)=>dkey(b.서비스일자).localeCompare(dkey(a.서비스일자)),      // 최신순
+    dateAsc:(a,b)=>dkey(a.서비스일자).localeCompare(dkey(b.서비스일자))};   // 과거순
+  rows.sort((a,b)=> orderIdx(a.연수원)-orderIdx(b.연수원) || by[state.sort](a,b));  // 연수원 그룹 내 정렬
+  return rows;
+}
+function render(){
+  const rows=apply(); currentRows=rows;
+  document.getElementById("rows").innerHTML=rows.map((d,i)=>{
+    const ended=d.서비스상태==="종료";
+    const tag=ended?'<span class="tag2 t-end">종료</span>':'';
+    return `<tr>`+
+      `<td class="name" style="--rc:${color(d.연수원)};border-left:3px solid ${color(d.연수원)}">`+
+        `<span class="src"><span class="d" style="background:${color(d.연수원)}"></span>${esc(d.연수원)}</span><br>`+
+        `<span class="title"${ended?' style="color:#9198ad"':''}>${esc(d.과정명)}</span>${tag}</td>`+
+      `<td class="num credit">${d.학점?esc(d.학점):'<span class="muted">–</span>'}</td>`+
+      `<td class="num chasi">${d.시간?esc(d.시간):'<span class="muted">–</span>'}</td>`+
+      `<td class="topic">${d.주제?`<span class="topic-badge" style="background:${topicColor(d.주제)}1f;color:${topicColor(d.주제)}">${esc(d.주제)}</span>`:'<span class="muted">–</span>'}</td>`+
+      `<td class="tutor">${d.강사명?esc(d.강사명):'<span class="muted">미확인</span>'}</td>`+
+      `<td class="date">${esc(d.서비스일자)||'<span class="muted">–</span>'}</td>`+
+      `<td class="copy"><button class="copybtn" data-i="${i}">복사</button></td></tr>`;
+  }).join("");
+  document.getElementById("empty").classList.toggle("hidden",rows.length>0);
+  document.getElementById("navTotal").textContent=DATA.length.toLocaleString();
+  document.getElementById("crumbCount").textContent=rows.length.toLocaleString();
+  document.getElementById("crumbSite").textContent=state.site||"전체";
+  document.getElementById("foot").textContent=`표시 ${rows.length.toLocaleString()}개 · 전체 ${DATA.length.toLocaleString()}개 · 데이터 출처: 각 연수원 공개 과정 목록`;
+}
+
+function renderReport(){
+  const total=DATA.length, live=DATA.filter(d=>d.서비스상태!=="종료").length, end=total-live;
+  const months={}; DATA.forEach(d=>{const m=String(d.서비스일자).match(/^(\d{4}-\d{2})/); if(m)months[m[1]]=(months[m[1]]||0)+1;});
+  const mkeys=Object.keys(months).sort(); const last=mkeys.slice(-8);
+  const lastMonthNew=mkeys.length?months[mkeys[mkeys.length-1]]:0;
+  document.getElementById("kpis").innerHTML=[
+    ["전체 과정",total.toLocaleString(),""],["서비스중",live.toLocaleString(),""],
+    ["종료",end.toLocaleString(),""],["최근월 신규",lastMonthNew.toLocaleString(),(mkeys[mkeys.length-1]||"")]
+  ].map(k=>`<div class="kpi"><div class="k">${k[0]}${k[2]?` <small>${k[2]}</small>`:""}</div><div class="v">${k[1]}</div></div>`).join("");
+  const hold={}; DATA.forEach(d=>{if(d.서비스상태!=="종료")hold[d.연수원]=(hold[d.연수원]||0)+1;});
+  const sites=Object.keys(hold).sort((a,b)=>orderIdx(a)-orderIdx(b));
+  const max=Math.max(...sites.map(s=>hold[s]),1);
+  document.getElementById("holdBars").innerHTML=sites.map(s=>
+    `<div class="bar"><span class="nm">${esc(s)}</span>`+
+    `<span class="track"><span class="fill" style="width:${Math.round(hold[s]/max*100)}%;background:${color(s)}"></span></span>`+
+    `<span class="val">${hold[s]}</span></div>`).join("");
+  const mmax=Math.max(...last.map(m=>months[m]),1);
+  document.getElementById("trend").innerHTML=last.map(m=>{
+    const h=Math.round(months[m]/mmax*180)+6;
+    return `<div class="col"><div class="cv">${months[m]}</div><div class="cbar" style="height:${h}px"></div><div class="cx">${m.slice(5)}월</div></div>`;
+  }).join("");
+  const recent=[...DATA].filter(d=>/^\d{4}-\d{2}/.test(d.서비스일자))
+    .sort((a,b)=>String(b.서비스일자).localeCompare(String(a.서비스일자))).slice(0,7);
+  document.getElementById("recent").innerHTML=recent.map(d=>
+    `<div class="r"><span class="d" style="width:7px;height:7px;border-radius:3px;background:${color(d.연수원)}"></span>`+
+    `<span class="rt">${esc(d.과정명)}</span><span class="rs">${esc(d.연수원)} · ${esc(d.서비스일자)}</span></div>`).join("");
+}
+
+document.getElementById("q").oninput=e=>{state.q=e.target.value;render();};
+document.getElementById("sortSel").onchange=e=>{state.sort=e.target.value;render();};
+document.getElementById("statSel").onchange=e=>{state.status=e.target.value;render();};
+document.getElementById("creditSel").onchange=e=>{state.credit=e.target.value;render();};
+document.getElementById("rows").addEventListener("click",e=>{const b=e.target.closest(".copybtn");if(!b)return;
+  const d=currentRows[+b.dataset.i];if(d)copyText(tsvOf(d));});
+document.getElementById("copyAll").onclick=()=>{if(!currentRows.length){toast("복사할 항목이 없습니다");return;}
+  copyText(COPY_COLS.join("\t")+"\n"+currentRows.map(tsvOf).join("\n"));};
+document.querySelectorAll(".nav a[data-view]").forEach(a=>a.onclick=()=>{ if(a.dataset.view==="list"){state.site="";syncSiteNav();} showView(a.dataset.view); });
+document.getElementById("refresh").onclick=()=>{render();toast("최신 데이터로 갱신했습니다");};
+document.getElementById("aiBtn").onclick=()=>toast("AI 인사이트는 준비 중입니다");
+
+fetch('data/courses.json',{cache:'no-store'}).then(r=>r.json()).then(rows=>{DATA=rows||[];buildSiteNav();render();}).catch(e=>{DATA=[];buildSiteNav();render();toast('데이터를 불러오지 못했습니다');});
+</script>
+</body></html>
