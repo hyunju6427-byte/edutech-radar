@@ -88,9 +88,8 @@ def load_all(page, more_selector: str | None = None, card_selector: str | None =
 
     clicks = 0
     last = count()
-    stable = 0  # 변화 없는 라운드 누적
+    stale = 0  # 카드가 안 늘어난 라운드 누적
     for _ in range(rounds):
-        progressed = False
         # 1) '더보기' 후보들 중 보이는 첫 버튼 클릭
         btn = None
         for sel in candidates:
@@ -106,24 +105,29 @@ def load_all(page, more_selector: str | None = None, card_selector: str | None =
                 btn.scroll_into_view_if_needed(timeout=2000)
                 btn.click(timeout=3000)
                 clicks += 1
-                progressed = True
             except Exception:
                 try:
                     page.evaluate("(el)=>el.click()", btn)
                     clicks += 1
-                    progressed = True
                 except Exception:
                     pass
         # 2) 스크롤(무한 스크롤 대응)
         if scroll:
             page.mouse.wheel(0, 30000)
         page.wait_for_timeout(900)
-        # 3) 카드가 늘었는지로 진행 판정
+        # 3) 진행 판정은 '카드가 늘었는지'로만 한다(버튼만 남아 헛클릭하는 것 방지)
         cur = count()
-        if cur > last:
-            last = cur
-            progressed = True
-        stable = 0 if progressed else stable + 1
-        if stable >= 2:   # 2회 연속 변화 없으면 종료
-            break
+        if card_selector:
+            if cur > last:
+                last = cur
+                stale = 0
+            else:
+                stale += 1
+            if stale >= 2:      # 2회 연속 안 늘면 종료
+                break
+            if not btn and cur == last:  # 누를 것도 없고 안 늘면 종료
+                break
+        else:
+            if not btn:         # 카드 기준이 없으면 버튼 없을 때 종료
+                break
     return {"clicks": clicks, "count": last if last >= 0 else None}

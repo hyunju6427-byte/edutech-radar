@@ -10,5 +10,5 @@ SITES = {
 
 # Playwright 동작
 HEADLESS = os.environ.get("HEADLESS", "1") != "0"
-MAX_LOAD_MORE = int(os.environ.get("MAX_LOAD_MORE", "200"))
+MAX_LOAD_MORE = int(os.environ.get("MAX_LOAD_MORE", "120"))
 PAGE_TIMEOUT_MS = 30000
