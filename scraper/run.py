@@ -14,8 +14,10 @@ DATA_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'courses.json'
 # ── 종료 자동정리 설정 ─────────────────────────────────────────
 # 전체 목록을 '빠짐없이' 긁는 사이트만 넣는다(아니면 정상 과정이 매번 미노출로 잡혀 오판).
 # 처음엔 비워두고, 운영하며 확신이 서면 예: ['사제동행','한국교원'] 추가.
-FULL_CATALOG_SITES = ['티처빌', '아이스크림', '사제동행']  # 전체목록 수집 확인됨 → 종료 자동정리 대상
+FULL_CATALOG_SITES = ['티처빌', '사제동행']  # 종료 자동정리 대상(아이스크림은 이름 불일치로 제외)
 GRACE_RUNS = 2   # 연속 N회 미노출 시 종료 확정
+# 일회성: 여기 넣은 연수원의 '종료' 딱지를 전부 '서비스중'으로 되돌린다(정리 후 [] 로 비우면 됨).
+RESET_ENDED_SITES = ['아이스크림']
 
 # 자동 수집에서 제외할 연수원(기존 데이터는 대시보드에 그대로 남음).
 # 한국교원(hstudy)은 GitHub 서버 IP 접근이 막혀 제외. 차단 해제/국내수집 붙이면 비우면 됨.
@@ -63,6 +65,15 @@ def main():
                 r['구분'] = '기존'; r['서비스일자'] = ''; fixed += 1
         if fixed:
             print(f'[정리] 잘못 찍힌 신규 {fixed}건 → 기존 + 서비스일자 비움')
+
+    # ── 일회성 정리: 특정 연수원의 '종료' 딱지를 '서비스중'으로 되돌림(이름 불일치 오탐 복구) ──
+    if RESET_ENDED_SITES:
+        reset = 0
+        for r in state:
+            if r.get('연수원') in RESET_ENDED_SITES and r.get('서비스상태') == '종료':
+                r['서비스상태'] = '서비스중'; r['종료확인일'] = ''; r['미노출횟수'] = 0; reset += 1
+        if reset:
+            print(f'[정리] {RESET_ENDED_SITES} 종료→서비스중 복구 {reset}건')
 
     for name, spec in SPECS.items():
         if name in SKIP_SITES:
