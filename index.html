@@ -259,26 +259,6 @@
     </section>
   </main>
 </div>
-<div class="modal-back" id="editBack" hidden>
-  <div class="modal">
-    <h3>과정 편집</h3>
-    <div class="m-sub" id="m_sub"></div>
-    <label>과정명<input id="m_name" type="text"></label>
-    <div class="m-row">
-      <label>학점<input id="m_credit" type="text"></label>
-      <label>차시<input id="m_hours" type="text"></label>
-    </div>
-    <label>주제<input id="m_topic" type="text"></label>
-    <label>서비스일자<input id="m_date" type="date"></label>
-    <div class="m-actions">
-      <button class="btn danger" id="m_delete">삭제</button>
-      <span class="spacer"></span>
-      <button class="btn" id="m_revert">되돌리기</button>
-      <button class="btn" id="m_cancel">취소</button>
-      <button class="btn primary" id="m_save">저장</button>
-    </div>
-  </div>
-</div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -457,42 +437,53 @@ document.getElementById("rows").addEventListener("click",e=>{
   if(act==="edit"){ openEdit(key); }
 });
 
-// ── 편집 모달 ──
-let editKey=null;
+// ── 편집 모달 (필요할 때만 생성) ──
+let editKey=null, editBackEl=null;
+function closeEdit(){ if(editBackEl){ editBackEl.remove(); editBackEl=null; } editKey=null; }
 function openEdit(key){
   const orig=DATA.find(d=>d._key===key); if(!orig) return;
   const d=effective(orig); editKey=key;
-  document.getElementById("m_name").value=d.과정명||"";
-  document.getElementById("m_credit").value=d.학점||"";
-  document.getElementById("m_hours").value=d.시간||"";
-  document.getElementById("m_topic").value=d.주제||"";
-  document.getElementById("m_date").value=/^\d{4}-\d{2}-\d{2}$/.test(d.서비스일자||"")?d.서비스일자:"";
-  document.getElementById("m_sub").textContent=`${d.연수원} · ${(orig.과정명||"").slice(0,40)}`;
-  document.getElementById("editBack").hidden=false;
+  closeEdit();  // 혹시 남아있으면 정리
+  const back=document.createElement("div"); back.className="modal-back";
+  const dateVal=/^\d{4}-\d{2}-\d{2}$/.test(d.서비스일자||"")?d.서비스일자:"";
+  back.innerHTML=
+    '<div class="modal"><h3>과정 편집</h3>'+
+    '<div class="m-sub">'+esc(d.연수원)+' · '+esc((orig.과정명||"").slice(0,40))+'</div>'+
+    '<label>과정명<input id="m_name" type="text"></label>'+
+    '<div class="m-row"><label>학점<input id="m_credit" type="text"></label>'+
+    '<label>차시<input id="m_hours" type="text"></label></div>'+
+    '<label>주제<input id="m_topic" type="text"></label>'+
+    '<label>서비스일자<input id="m_date" type="date"></label>'+
+    '<div class="m-actions"><button class="btn danger" id="m_delete">삭제</button>'+
+    '<span class="spacer"></span><button class="btn" id="m_revert">되돌리기</button>'+
+    '<button class="btn" id="m_cancel">취소</button>'+
+    '<button class="btn primary" id="m_save">저장</button></div></div>';
+  document.body.appendChild(back); editBackEl=back;
+  back.querySelector("#m_name").value=d.과정명||"";
+  back.querySelector("#m_credit").value=d.학점||"";
+  back.querySelector("#m_hours").value=d.시간||"";
+  back.querySelector("#m_topic").value=d.주제||"";
+  back.querySelector("#m_date").value=dateVal;
+  back.onclick=e=>{ if(e.target===back) closeEdit(); };
+  back.querySelector("#m_cancel").onclick=closeEdit;
+  back.querySelector("#m_save").onclick=()=>{
+    overrides.edits[editKey]={ 과정명:back.querySelector("#m_name").value.trim(),
+      학점:back.querySelector("#m_credit").value.trim(),
+      시간:back.querySelector("#m_hours").value.trim(),
+      주제:back.querySelector("#m_topic").value.trim(),
+      서비스일자:back.querySelector("#m_date").value };
+    saveOv(); render(); closeEdit(); toast("수정됨 — 내보내기로 영구반영");
+  };
+  back.querySelector("#m_revert").onclick=()=>{
+    delete overrides.edits[editKey];
+    const i=overrides.deletes.indexOf(editKey); if(i>=0) overrides.deletes.splice(i,1);
+    saveOv(); render(); closeEdit(); toast("원본으로 되돌림");
+  };
+  back.querySelector("#m_delete").onclick=()=>{
+    if(overrides.deletes.indexOf(editKey)<0) overrides.deletes.push(editKey);
+    saveOv(); render(); closeEdit(); toast("삭제 표시됨 — 내보내기로 영구반영");
+  };
 }
-function closeEdit(){ document.getElementById("editBack").hidden=true; editKey=null; }
-document.getElementById("m_cancel").onclick=closeEdit;
-document.getElementById("editBack").onclick=e=>{ if(e.target.id==="editBack") closeEdit(); };
-document.getElementById("m_save").onclick=()=>{
-  if(!editKey) return;
-  const e={ 과정명:document.getElementById("m_name").value.trim(),
-            학점:document.getElementById("m_credit").value.trim(),
-            시간:document.getElementById("m_hours").value.trim(),
-            주제:document.getElementById("m_topic").value.trim(),
-            서비스일자:document.getElementById("m_date").value };
-  overrides.edits[editKey]=e; saveOv(); render(); closeEdit(); toast("수정됨 — 내보내기로 영구반영");
-};
-document.getElementById("m_revert").onclick=()=>{
-  if(!editKey) return;
-  delete overrides.edits[editKey];
-  const i=overrides.deletes.indexOf(editKey); if(i>=0) overrides.deletes.splice(i,1);
-  saveOv(); render(); closeEdit(); toast("원본으로 되돌림");
-};
-document.getElementById("m_delete").onclick=()=>{
-  if(!editKey) return;
-  if(overrides.deletes.indexOf(editKey)<0) overrides.deletes.push(editKey);
-  saveOv(); render(); closeEdit(); toast("삭제 표시됨 — 내보내기로 영구반영");
-};
 
 document.getElementById("exportEdits").onclick=()=>{
   const nEdit=Object.keys(overrides.edits).length, nDel=overrides.deletes.length;
