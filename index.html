@@ -99,10 +99,12 @@
   th.num,td.num{text-align:center; font-variant-numeric:tabular-nums; white-space:nowrap; width:66px}
   th.date,td.date{white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--ink-soft); width:118px}
   th.copy,td.copy{text-align:center; width:64px}
-  th.acts,td.acts{text-align:center; width:112px; white-space:nowrap}
-  .actbtn{border:1px solid var(--line-strong); background:var(--surface); border-radius:7px; padding:4px 7px;
-    cursor:pointer; font-size:13px; line-height:1; margin:0 1px}
-  .actbtn:hover{border-color:var(--brand)}
+  th.acts,td.acts{text-align:center; width:150px; white-space:nowrap}
+  .actbtn{border:1px solid var(--line-strong); background:var(--surface); border-radius:7px; padding:4px 9px;
+    cursor:pointer; font-size:12px; line-height:1; margin:0 1px; color:var(--ink-soft)}
+  .actbtn:hover{border-color:var(--brand); color:var(--brand)}
+  .actbtn.act-edit:hover{border-color:var(--brand); color:var(--brand-ink)}
+  .actbtn.act-del{color:#c2413f} .actbtn.act-del:hover{border-color:#c2413f; color:#c2413f}
   tr.rowdel{opacity:.5}
   tr.rowdel .title{text-decoration:line-through}
   .t-del{color:#c2413f; background:#fbe9e9}
@@ -371,9 +373,9 @@ function render(){
       `<td class="tutor">${d.강사명?esc(d.강사명):'<span class="muted">미확인</span>'}</td>`+
       `<td class="date">${d.서비스일자?esc(d.서비스일자):'<span class="muted">입력</span>'}</td>`+
       `<td class="acts">`+
-        `<button class="actbtn" data-act="edit" data-key="${esc(d._key)}" title="편집">✏️</button>`+
-        `<button class="actbtn" data-act="del" data-key="${esc(d._key)}" title="삭제/복구">🗑</button>`+
-        `<button class="actbtn" data-act="copy" data-i="${i}" title="복사">⧉</button>`+
+        `<button class="actbtn act-edit" data-act="edit" data-key="${esc(d._key)}">편집</button>`+
+        `<button class="actbtn act-del" data-act="del" data-key="${esc(d._key)}">${isDel?'복구':'삭제'}</button>`+
+        `<button class="actbtn" data-act="copy" data-i="${i}">복사</button>`+
       `</td></tr>`;
   }).join("");
   document.getElementById("empty").classList.toggle("hidden",rows.length>0);
