@@ -315,6 +315,13 @@ const MANUAL_KEY="edutech_manual_dates";  // 예전 버전 호환(있으면 서�
 const OV_KEY="edutech_overrides";
 let overrides={edits:{},deletes:[]};
 try{ const o=JSON.parse(localStorage.getItem(OV_KEY)||"{}"); overrides.edits=o.edits||{}; overrides.deletes=o.deletes||[]; }catch(e){}
+// 예전 버그로 생긴 null/빈 키 청소 (내보내기·처리 오류 방지)
+(function(){ let dirty=false;
+  for(const k of Object.keys(overrides.edits)){ if(k==="null"||k===""||k==null){ delete overrides.edits[k]; dirty=true; } }
+  const dl=overrides.deletes.filter(k=>k!=null && k!=="null" && k!=="");
+  if(dl.length!==overrides.deletes.length){ overrides.deletes=dl; dirty=true; }
+  if(dirty){ try{ localStorage.setItem(OV_KEY, JSON.stringify(overrides)); }catch(e){} }
+})();
 try{ const m=JSON.parse(localStorage.getItem(MANUAL_KEY)||"{}");  // 옛 수동날짜 → edits.서비스일자로 이관
      Object.keys(m).forEach(k=>{ overrides.edits[k]=Object.assign({서비스일자:m[k]}, overrides.edits[k]||{}); }); }catch(e){}
 function saveOv(){ try{ localStorage.setItem(OV_KEY, JSON.stringify(overrides)); }catch(e){} }
