@@ -502,8 +502,8 @@ let editKey=null, editBackEl=null;
 function closeEdit(){ if(editBackEl){ editBackEl.remove(); editBackEl=null; } editKey=null; }
 function openEdit(key){
   const orig=DATA.find(d=>d._key===key); if(!orig) return;
-  const d=effective(orig); editKey=key;
-  closeEdit();  // 혹시 남아있으면 정리
+  closeEdit();  // 혹시 남아있으면 정리 (editKey도 초기화됨)
+  const d=effective(orig); editKey=key;  // ← 정리 후에 키 설정
   const back=document.createElement("div"); back.className="modal-back";
   const dateVal=/^\d{4}-\d{2}-\d{2}$/.test(d.서비스일자||"")?d.서비스일자:"";
   back.innerHTML=
