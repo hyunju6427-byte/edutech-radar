@@ -14,9 +14,9 @@
     --ink:#1e2440; --ink-soft:#5b6178; --ink-faint:#9198ad;
     --app:#f5f5fb; --surface:#ffffff; --line:#e9e7f3; --line-strong:#d9d5ea;
     --fresh:#0e8a6b; --fresh-bg:#e6f5ef; --end:#9198ad; --end-bg:#eeecf5;
-    --c-티처빌:#3f74f0; --c-아이스크림:#14b8a6; --c-한국교원:#7c4ce0; --c-사제동행:#2e9e6b;
-    --c-교육사랑:#e0663a; --c-하이컨텐츠:#d24d6b; --c-T셀파:#c78a2b; --c-유니텔:#4aa0d8;
-    --c-에듀니티:#a23e9e; --c-카운피아:#5f8a2e; --c-창비:#b8862b;
+    --c-비바샘:#7c3aed; --c-티처빌:#2563eb; --c-아이스크림:#f97316; --c-한국교원:#6b7280;
+    --c-사제동행:#16a34a; --c-교육사랑:#c4b5fd; --c-하이컨텐츠:#dc2626; --c-T셀파:#0ea5e9;
+    --c-유니텔:#eab308; --c-에듀니티:#84cc16; --c-카운피아:#f472b6; --c-창비:#92400e;
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
@@ -53,9 +53,9 @@
   .nav a .cnt{font-size:12px; color:var(--ink-faint); background:var(--app); border-radius:20px; padding:1px 9px; font-variant-numeric:tabular-nums}
   .nav a.on .cnt{background:#fff; color:var(--brand-ink)}
   .sitenav{display:flex; flex-direction:column; gap:1px; margin:2px 0 0 4px; padding-left:9px; border-left:1px solid var(--line)}
-  .sitenav a{padding:8px 10px; font-size:13px; border-radius:9px; cursor:pointer}
-  .sitenav a .l{gap:8px}
-  .sitenav a .sd{width:9px;height:9px;border-radius:3px; flex:0 0 auto}
+  .sitenav a{padding:8px 10px; font-size:13px; border-radius:9px; cursor:pointer; font-weight:600}
+  .sitenav a .l{display:flex; align-items:center; gap:12px}
+  .sitenav a .sd{width:10px;height:10px;border-radius:3px; flex:0 0 auto; display:inline-block}
   .sitenav a.on{background:var(--brand-bg); color:var(--brand-ink); font-weight:600}
   .sitenav a .cntp{color:var(--ink-faint); font-weight:400; font-variant-numeric:tabular-nums}
   .sitenav a.on .cntp{color:var(--brand-ink)}
@@ -235,8 +235,6 @@
     <button class="refresh" id="refresh">↻ 데이터 새로고침</button>
 
     <div class="sec">CHANNEL · 경쟁사 연수</div>
-    <nav class="nav"><a data-view="list" class="on"><span class="l">📋 연수 목록</span><span class="cnt" id="navTotal">0</span></a></nav>
-    <div class="sec" style="margin-top:10px">↳ 연수원</div>
     <div class="sitenav" id="siteNav"></div>
 
     <div class="sec">REFERENCE · 참고</div>
@@ -320,6 +318,7 @@
 let DATA = [];
 const ORDER = ["비바샘","티처빌","아이스크림","한국교원","사제동행","교육사랑","하이컨텐츠","T셀파","유니텔","에듀니티","카운피아","창비"];
 const orderIdx = s => { const i=ORDER.indexOf(s); return i<0?999:i; };
+const ym = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");  // 지역시간 기준 YYYY-MM (UTC 시차 버그 방지)
 function color(s){ const v=getComputedStyle(document.documentElement).getPropertyValue('--c-'+s).trim(); return v||'#6a49e6'; }
 const TOPIC_PALETTE=["#6a49e6","#3f74f0","#14b8a6","#2e9e6b","#e0663a","#d24d6b","#c78a2b","#4aa0d8","#a23e9e","#5f8a2e","#b8862b","#7c4ce0","#0e8a6b","#c2413f","#4356c0","#2f8f8f"];
 function topicColor(t){let h=0;for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))>>>0;return TOPIC_PALETTE[h%TOPIC_PALETTE.length];}
@@ -421,7 +420,7 @@ function apply(){
 function render(){
   const rows=apply(); currentRows=rows;
   const del=delSet();
-  const thisMonth=new Date().toISOString().slice(0,7);  // 예: 2026-09
+  const thisMonth=ym(new Date());  // 예: 2026-09
   document.getElementById("rows").innerHTML=rows.map((d,i)=>{
     const ended=d.서비스상태==="종료";
     const isDel=del.has(d._key);
@@ -447,7 +446,7 @@ function render(){
   }).join("");
   document.getElementById("empty").classList.toggle("hidden",rows.length>0);
   const liveTotal=DATA.filter(d=>!del.has(d._key)).map(effective).filter(d=>d.서비스상태!=="종료").length;
-  document.getElementById("navTotal").textContent=liveTotal.toLocaleString();
+  const navTotalEl=document.getElementById("navTotal"); if(navTotalEl) navTotalEl.textContent=liveTotal.toLocaleString();
   document.getElementById("crumbCount").textContent=rows.length.toLocaleString();
   document.getElementById("crumbSite").textContent=state.site||"전체";
   const nEdit=Object.keys(overrides.edits).length, nDel=overrides.deletes.length;
@@ -460,7 +459,7 @@ function renderReport(){
   const SITES=["비바샘","티처빌","아이스크림"];
   const now=new Date();
   // 최근 6개월 키
-  const mkeys=[]; for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1); mkeys.push(d.toISOString().slice(0,7));}
+  const mkeys=[]; for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1); mkeys.push(ym(d));}
   // 월×연수원 카운트 (신규 오픈 = 서비스일자 기준)
   const cnt={}; SITES.forEach(s=>cnt[s]={});
   DATA.forEach(d=>{ if(!SITES.includes(d.연수원))return;
@@ -477,7 +476,7 @@ function renderReport(){
     `<span class="lg"><span class="ld" style="background:${color(s)}"></span>${esc(s)}</span>`).join("");
 
   // ── 전월 신규 과정 리뷰 ──
-  const pm=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().slice(0,7);
+  const pm=ym(new Date(now.getFullYear(),now.getMonth()-1,1));
   const pmLabel=`${pm.slice(0,4)}년 ${pm.slice(5)}월`;
   document.getElementById("reviewTitle").textContent=`전월 신규 과정 리뷰 (${pmLabel})`;
   document.getElementById("reviewDesc").textContent=`${pmLabel}에 새로 오픈된 과정을 연수원별로 정리했습니다.`;
@@ -500,7 +499,7 @@ function renderReport(){
   }).join("");
 
   // ── 최근 3개월 신규 활발도(3사) + 주제별 신규 건수 ──
-  const last3=[2,1,0].map(i=>new Date(now.getFullYear(),now.getMonth()-i,1).toISOString().slice(0,7));
+  const last3=[2,1,0].map(i=>ym(new Date(now.getFullYear(),now.getMonth()-i,1)));
   const inLast3=d=>last3.includes(String(d.서비스일자||"").slice(0,7));
   const r3=document.getElementById("recent3");
   if(r3){
