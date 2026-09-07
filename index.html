@@ -414,7 +414,7 @@ function apply(){
   const by={
     date:(a,b)=>dkey(b.서비스일자).localeCompare(dkey(a.서비스일자)),      // 최신순
     dateAsc:(a,b)=>dkey(a.서비스일자).localeCompare(dkey(b.서비스일자))};   // 과거순
-  rows.sort((a,b)=> orderIdx(a.연수원)-orderIdx(b.연수원) || by[state.sort](a,b));  // 연수원 그룹 내 정렬
+  rows.sort((a,b)=> by[state.sort](a,b) || orderIdx(a.연수원)-orderIdx(b.연수원));  // 서비스일자 우선, 동일 시 연수원순
   return rows;
 }
 function render(){
