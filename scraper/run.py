@@ -18,6 +18,8 @@ FULL_CATALOG_SITES = ['티처빌', '사제동행']  # 종료 자동정리 대상
 GRACE_RUNS = 2   # 연속 N회 미노출 시 종료 확정
 # 일회성: 여기 넣은 연수원의 '종료' 딱지를 전부 '서비스중'으로 되돌린다(정리 후 [] 로 비우면 됨).
 RESET_ENDED_SITES = ['아이스크림']
+# 비바샘(자사) 시드: 크롤링 대상이 아니므로 이 파일에서 없는 과정만 병합한다.
+VIVASAM_SEED_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'vivasam_seed.json')
 
 # 자동 수집에서 제외할 연수원(기존 데이터는 대시보드에 그대로 남음).
 # 한국교원(hstudy)은 GitHub 서버 IP 접근이 막혀 제외. 차단 해제/국내수집 붙이면 비우면 됨.
@@ -55,6 +57,22 @@ def main():
     seeding = len(state) == 0          # courses.json이 비었으면 최초 백필
     live = {}                          # site -> set(_key) : 이번에 '현재 서비스중'으로 확인된 것
     total_new = 0
+
+    # ── 비바샘 시드 병합: 없는 과정만 추가(기존 데이터는 건드리지 않음) ──
+    if os.path.exists(VIVASAM_SEED_PATH):
+        try:
+            with open(VIVASAM_SEED_PATH, encoding='utf-8') as f:
+                vseed = json.load(f)
+            added = 0
+            for rec in vseed:
+                k = rec.get('_key') or ('비바샘::' + norm(rec.get('과정명')))
+                rec['_key'] = k
+                if k not in seen:
+                    state.append(rec); seen[k] = rec; added += 1
+            if added:
+                print(f'[비바샘] 시드 병합 신규 {added}건 (총 시드 {len(vseed)}건)')
+        except Exception as e:
+            print(f'[비바샘] 시드 병합 오류: {e}')
 
     # ── 일회성 정리: '오늘'로 잘못 찍힌 대량유입분(구분=신규 & 서비스일자<=기준일) → 기존 + 날짜비움 ──
     if CLEAN_NEW_BEFORE:
@@ -150,7 +168,7 @@ def main():
                 ov = json.load(f)
             edits = ov.get('edits', {}) or {}
             deletes = set(ov.get('deletes', []) or [])
-            EDITABLE = ('과정명', '학점', '시간', '주제', '서비스일자')
+            EDITABLE = ('과정명', '학점', '시간', '주제', '서비스일자', '서비스상태')
             ed = 0
             for r in state:
                 e = edits.get(r['_key'])
@@ -160,6 +178,8 @@ def main():
                             r[k] = e[k]
                     if e.get('서비스일자') and len(str(e['서비스일자'])) >= 7:
                         r['신규오픈월'] = str(e['서비스일자'])[:7]
+                    if e.get('서비스상태') == '서비스중':   # 종료 해제 시 미노출/종료확인일 초기화
+                        r['미노출횟수'] = 0; r['종료확인일'] = ''
                     ed += 1
             before = len(state)
             state = [r for r in state if r['_key'] not in deletes]
