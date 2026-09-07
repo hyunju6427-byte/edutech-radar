@@ -178,6 +178,15 @@
   .rvlist .rc{color:var(--ink-faint); font-size:11.5px}
   .rmore{font-size:12px; color:var(--ink-faint); margin-top:4px}
   .rvempty{font-size:13px; color:var(--ink-faint); margin-top:10px}
+  /* 주제별 신규 2열 */
+  .topicshare{display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:6px}
+  .tpcol .tphead{display:flex; align-items:center; gap:8px; font-size:14px; margin-bottom:10px}
+  .tpcol .tphead .rvdot{width:10px;height:10px;border-radius:3px}
+  .tprow{display:flex; align-items:center; gap:10px; margin:5px 0; font-size:13px}
+  .tprow .tpt{width:88px; flex:0 0 auto; color:var(--ink-soft); text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .tprow .tptrack{flex:1; height:9px; background:var(--line); border-radius:6px; overflow:hidden}
+  .tprow .tpfill{display:block; height:100%; border-radius:6px}
+  .tprow .tpv{width:26px; flex:0 0 auto; text-align:right; color:var(--ink); font-variant-numeric:tabular-nums}
   .panel{background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:20px; box-shadow:0 1px 2px rgba(30,36,64,.03)}
   .panel h3{margin:0 0 2px; font-size:15px; font-weight:600}
   .panel .desc{color:var(--ink-faint); font-size:12px; margin-bottom:16px}
@@ -207,7 +216,7 @@
     .side{position:fixed; z-index:40; transform:translateX(-100%); transition:transform .2s}
     .side.open{transform:none}
     .report{grid-template-columns:1fr} .kpis{grid-template-columns:repeat(2,1fr)}
-    .reviews{grid-template-columns:1fr}
+    .reviews{grid-template-columns:1fr} .topicshare{grid-template-columns:1fr}
     thead{display:none} tbody td{display:block; border:0; padding:4px 15px}
     tbody tr{display:block; padding:14px 0; border-bottom:1px solid var(--line); border-left:3px solid var(--rc,transparent)}
     td.name{border-left:0}
@@ -291,6 +300,16 @@
         <h3 id="reviewTitle">전월 신규 과정 리뷰</h3>
         <div class="desc" id="reviewDesc"></div>
         <div class="reviews" id="reviews"></div>
+      </div>
+      <div class="panel" style="margin-top:14px">
+        <h3>최근 3개월 신규 활발도 — 3사</h3>
+        <div class="desc" id="recent3desc"></div>
+        <div class="bars" id="recent3"></div>
+      </div>
+      <div class="panel" style="margin-top:14px">
+        <h3>최근 3개월 주제별 신규 — 티처빌 · 아이스크림</h3>
+        <div class="desc">각 연수원 원본 주제 라벨 기준 신규 개설 건수 (연수원마다 분류 체계가 달라 나란히 비교하지 않고 각자 표기)</div>
+        <div class="topicshare" id="topicShare"></div>
       </div>
     </section>
   </main>
@@ -479,6 +498,38 @@ function renderReport(){
          :`<div class="rvempty">신규 과정 없음</div>`)+
     `</div>`;
   }).join("");
+
+  // ── 최근 3개월 신규 활발도(3사) + 주제별 신규 건수 ──
+  const last3=[2,1,0].map(i=>new Date(now.getFullYear(),now.getMonth()-i,1).toISOString().slice(0,7));
+  const inLast3=d=>last3.includes(String(d.서비스일자||"").slice(0,7));
+  const r3=document.getElementById("recent3");
+  if(r3){
+    const c3={}; SITES.forEach(s=>c3[s]=DATA.filter(d=>d.연수원===s&&inLast3(d)).length);
+    const m3=Math.max(1,...SITES.map(s=>c3[s]));
+    r3.innerHTML=SITES.map(s=>
+      `<div class="bar"><span class="nm">${esc(s)}</span>`+
+      `<span class="track"><span class="fill" style="width:${Math.round(c3[s]/m3*100)}%;background:${color(s)}"></span></span>`+
+      `<span class="val">${c3[s]}</span></div>`).join("");
+    document.getElementById("recent3desc").textContent=`${last3[0].replace('-','.')}~${last3[2].replace('-','.')} · 서비스일자 기준 신규 개설 수`;
+  }
+  // 주제별 신규(최근3개월) — 티처빌/아이스크림 (라벨 원본 유지, 강제 매칭 안 함)
+  const tp=document.getElementById("topicShare");
+  if(tp){
+    const CMP=["티처빌","아이스크림"];
+    const map={}; CMP.forEach(s=>map[s]={});
+    DATA.forEach(d=>{ if(!CMP.includes(d.연수원)||!inLast3(d))return;
+      const t=(d.주제||"").trim()||"(미분류)"; map[d.연수원][t]=(map[d.연수원][t]||0)+1; });
+    const rowsHtml=CMP.map(s=>{
+      const items=Object.entries(map[s]).sort((a,b)=>b[1]-a[1]);
+      const max=Math.max(1,...items.map(x=>x[1]));
+      const lis=items.map(([t,v])=>
+        `<div class="tprow"><span class="tpt">${esc(t)}</span>`+
+        `<span class="tptrack"><span class="tpfill" style="width:${Math.round(v/max*100)}%;background:${color(s)}"></span></span>`+
+        `<span class="tpv">${v}</span></div>`).join("")||`<div class="rvempty">신규 없음</div>`;
+      return `<div class="tpcol"><div class="tphead"><span class="rvdot" style="background:${color(s)}"></span><b>${esc(s)}</b></div>${lis}</div>`;
+    }).join("");
+    tp.innerHTML=rowsHtml;
+  }
 }
 
 document.getElementById("q").oninput=e=>{state.q=e.target.value;render();};
