@@ -57,6 +57,8 @@
   .sitenav a .l{gap:8px}
   .sitenav a .sd{width:9px;height:9px;border-radius:3px; flex:0 0 auto}
   .sitenav a.on{background:var(--brand-bg); color:var(--brand-ink); font-weight:600}
+  .sitenav a .cntp{color:var(--ink-faint); font-weight:400; font-variant-numeric:tabular-nums}
+  .sitenav a.on .cntp{color:var(--brand-ink)}
   .badge{font-size:9.5px; font-weight:700; letter-spacing:.04em; color:#fff; background:var(--grad);
     border-radius:5px; padding:1px 6px; margin-left:6px}
   .grow{flex:1}
@@ -108,6 +110,10 @@
   tr.rowdel{opacity:.5}
   tr.rowdel .title{text-decoration:line-through}
   .t-del{color:#c2413f; background:#fbe9e9}
+  tr.rownow{background:linear-gradient(90deg,#fff8e6,#fffdf7)}
+  tr.rownow:hover{background:#fff4d6}
+  tr.rownow td.name{border-left-color:#f0b000}
+  .t-now{color:#9a6a00; background:#ffedb3}
   .chk{display:inline-flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-soft); cursor:pointer; margin-left:4px}
   .btn.primary{background:var(--grad); color:#fff; border:0}
   .btn.primary:hover{filter:brightness(1.05); color:#fff}
@@ -121,7 +127,9 @@
   .modal label{display:block; font-size:12.5px; color:var(--ink-soft); margin-bottom:12px}
   .modal input{display:block; width:100%; margin-top:5px; font:inherit; font-size:14px; color:var(--ink);
     border:1px solid var(--line-strong); border-radius:9px; padding:9px 11px; background:var(--surface)}
-  .modal input:focus{outline:2px solid var(--brand); outline-offset:1px}
+  .modal select{display:block; width:100%; margin-top:5px; font:inherit; font-size:14px; color:var(--ink);
+    border:1px solid var(--line-strong); border-radius:9px; padding:9px 11px; background:var(--surface); cursor:pointer}
+  .modal input:focus,.modal select:focus{outline:2px solid var(--brand); outline-offset:1px}
   .modal .m-row{display:flex; gap:12px} .modal .m-row label{flex:1}
   .modal .m-actions{display:flex; align-items:center; gap:8px; margin-top:6px}
   tbody td{padding:13px 15px; border-bottom:1px solid var(--line); vertical-align:middle}
@@ -149,6 +157,27 @@
   .kpi .v{font-size:29px; font-weight:700; letter-spacing:-.02em; margin-top:6px; font-variant-numeric:tabular-nums}
   .kpi .v small{font-size:13px; font-weight:500; color:var(--ink-faint); margin-left:3px}
   .report{display:grid; grid-template-columns:350px 1fr; gap:14px; align-items:start}
+  /* 3사 비교 그룹 막대 */
+  .gchart{display:flex; align-items:flex-end; gap:18px; height:210px; padding:10px 6px 0; overflow-x:auto}
+  .gcol{display:flex; flex-direction:column; align-items:center; gap:6px; flex:1; min-width:70px}
+  .gbars{display:flex; align-items:flex-end; gap:5px; height:180px}
+  .gbar{width:16px; border-radius:5px 5px 0 0; position:relative; display:flex; justify-content:center; transition:height .3s}
+  .gbar .gv{position:absolute; top:-16px; font-size:10.5px; color:var(--ink-soft); font-variant-numeric:tabular-nums}
+  .gx{font-size:11.5px; color:var(--ink-faint)}
+  .glegend{display:flex; gap:16px; justify-content:center; margin-top:12px}
+  .glegend .lg{display:inline-flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-soft)}
+  .glegend .ld{width:11px; height:11px; border-radius:3px}
+  /* 전월 리뷰 카드 */
+  .reviews{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:6px}
+  .rvcard{border:1px solid var(--line); border-left:3px solid var(--rc,#ccc); border-radius:14px; padding:14px 16px; background:var(--surface)}
+  .rvhead{display:flex; align-items:center; gap:8px; font-size:15px}
+  .rvhead .rvdot{width:10px; height:10px; border-radius:3px}
+  .rvhead .rvn{margin-left:auto; font-size:13px; color:var(--ink-soft); font-weight:600}
+  .rvtopic{font-size:12px; color:var(--ink-soft); margin:8px 0 6px}
+  .rvlist{margin:0; padding-left:18px; font-size:13px; line-height:1.6}
+  .rvlist .rc{color:var(--ink-faint); font-size:11.5px}
+  .rmore{font-size:12px; color:var(--ink-faint); margin-top:4px}
+  .rvempty{font-size:13px; color:var(--ink-faint); margin-top:10px}
   .panel{background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:20px; box-shadow:0 1px 2px rgba(30,36,64,.03)}
   .panel h3{margin:0 0 2px; font-size:15px; font-weight:600}
   .panel .desc{color:var(--ink-faint); font-size:12px; margin-bottom:16px}
@@ -178,6 +207,7 @@
     .side{position:fixed; z-index:40; transform:translateX(-100%); transition:transform .2s}
     .side.open{transform:none}
     .report{grid-template-columns:1fr} .kpis{grid-template-columns:repeat(2,1fr)}
+    .reviews{grid-template-columns:1fr}
     thead{display:none} tbody td{display:block; border:0; padding:4px 15px}
     tbody tr{display:block; padding:14px 0; border-bottom:1px solid var(--line); border-left:3px solid var(--rc,transparent)}
     td.name{border-left:0}
@@ -190,7 +220,7 @@
 <div class="app">
   <aside class="side" id="side">
     <div class="brandrow"><div class="logo">V</div><div class="name">신규 리스트</div></div>
-    <div class="headline">경쟁사 신규 연수 리스트</div>
+    <div class="headline">원격교육연수원<br>연수 리스트</div>
     <div class="tag">티처빌 · 아이스크림 · 한국교원 · 사제동행 외<br>경쟁 연수원 신규·종료를 한 화면에</div>
     <div class="daterow"><span class="d" id="today"></span><span class="live"><span class="dot"></span>실시간</span></div>
     <button class="refresh" id="refresh">↻ 데이터 새로고침</button>
@@ -204,7 +234,6 @@
     <nav class="nav"><a data-view="report"><span class="l">📊 경쟁사 분석 보고서 <span class="badge">BETA</span></span></a></nav>
 
     <div class="grow"></div>
-    <button class="aibtn" id="aiBtn">💬 AI 인사이트</button>
   </aside>
 
   <main class="main">
@@ -252,11 +281,16 @@
     </section>
 
     <section id="view-report" class="hidden">
-      <div class="kpis" id="kpis"></div>
-      <div class="report">
-        <div class="panel"><h3>보유 과정수</h3><div class="desc">연수원별 서비스중 과정 (전체 기간)</div><div class="bars" id="holdBars"></div></div>
-        <div class="panel"><h3>월별 신규 오픈 추이</h3><div class="desc">최근 8개월 신규 개설 수</div>
-          <div class="chart" id="trend"></div><div class="recent" id="recent"></div></div>
+      <div class="panel">
+        <h3>월별 신규 오픈 추이 — 3사 비교</h3>
+        <div class="desc">비바샘 · 티처빌 · 아이스크림 · 최근 6개월 신규 개설 수</div>
+        <div class="gchart" id="trend3"></div>
+        <div class="glegend" id="trend3legend"></div>
+      </div>
+      <div class="panel" style="margin-top:14px">
+        <h3 id="reviewTitle">전월 신규 과정 리뷰</h3>
+        <div class="desc" id="reviewDesc"></div>
+        <div class="reviews" id="reviews"></div>
       </div>
     </section>
   </main>
@@ -265,7 +299,7 @@
 
 <script>
 let DATA = [];
-const ORDER = ["티처빌","아이스크림","한국교원","사제동행","교육사랑","하이컨텐츠","T셀파","유니텔","에듀니티","카운피아","창비"];
+const ORDER = ["비바샘","티처빌","아이스크림","한국교원","사제동행","교육사랑","하이컨텐츠","T셀파","유니텔","에듀니티","카운피아","창비"];
 const orderIdx = s => { const i=ORDER.indexOf(s); return i<0?999:i; };
 function color(s){ const v=getComputedStyle(document.documentElement).getPropertyValue('--c-'+s).trim(); return v||'#6a49e6'; }
 const TOPIC_PALETTE=["#6a49e6","#3f74f0","#14b8a6","#2e9e6b","#e0663a","#d24d6b","#c78a2b","#4aa0d8","#a23e9e","#5f8a2e","#b8862b","#7c4ce0","#0e8a6b","#c2413f","#4356c0","#2f8f8f"];
@@ -296,14 +330,17 @@ const tsvOf=d=>COPY_COLS.map(k=>String(d[k]==null?"":d[k]).replace(/[\t\n]/g," "
 /* 연수원 사이드바 */
 function buildSiteNav(){
   const box=document.getElementById("siteNav");
-  const counts={}; DATA.forEach(d=>counts[d.연수원]=(counts[d.연수원]||0)+1);
+  const del=delSet();
+  // 서비스중만 집계 (종료·삭제 제외, 편집된 상태 반영)
+  const live=DATA.filter(d=>!del.has(d._key)).map(effective).filter(d=>d.서비스상태!=="종료");
+  const counts={}; live.forEach(d=>counts[d.연수원]=(counts[d.연수원]||0)+1);
+  const totalLive=live.length;
   const sites=Object.keys(counts).sort((a,b)=>orderIdx(a)-orderIdx(b));
   const mk=(val,label,dot,cnt)=>{const a=document.createElement("a");a.dataset.site=val;
-    a.innerHTML=`<span class="l">${dot?`<span class="sd" style="background:${color(val)}"></span>`:""}${esc(label)}</span>`+
-      (cnt!=null?`<span class="cnt">${cnt.toLocaleString()}</span>`:"");
+    a.innerHTML=`<span class="l">${dot?`<span class="sd" style="background:${color(val)}"></span>`:""}${esc(label)}${cnt!=null?` <span class="cntp">(${cnt.toLocaleString()})</span>`:""}</span>`;
     if(val===state.site)a.className="on";
     a.onclick=()=>{state.site=val; state.month=""; state.topicF=""; showView("list"); syncSiteNav(); buildFilters(); render();};return a;};
-  box.innerHTML=""; box.appendChild(mk("","전체",false,DATA.length));
+  box.innerHTML=""; box.appendChild(mk("","전체",false,totalLive));
   sites.forEach(s=>box.appendChild(mk(s,s,true,counts[s])));
 }
 function syncSiteNav(){document.querySelectorAll("#siteNav a").forEach(a=>a.classList.toggle("on",a.dataset.site===state.site));}
@@ -358,15 +395,19 @@ function apply(){
 function render(){
   const rows=apply(); currentRows=rows;
   const del=delSet();
+  const thisMonth=new Date().toISOString().slice(0,7);  // 예: 2026-09
   document.getElementById("rows").innerHTML=rows.map((d,i)=>{
     const ended=d.서비스상태==="종료";
     const isDel=del.has(d._key);
+    const isNow=!ended && String(d.서비스일자||"").startsWith(thisMonth);  // 이번 달 서비스일자
     const tag=ended?'<span class="tag2 t-end">종료</span>':'';
     const delTag=isDel?'<span class="tag2 t-del">삭제됨</span>':'';
-    return `<tr${isDel?' class="rowdel"':''}>`+
+    const nowTag=isNow?'<span class="tag2 t-now">이번 달</span>':'';
+    const cls=(isDel?'rowdel ':'')+(isNow?'rownow':'');
+    return `<tr${cls?` class="${cls.trim()}"`:''}>`+
       `<td class="name" style="--rc:${color(d.연수원)};border-left:3px solid ${color(d.연수원)}">`+
         `<span class="src"><span class="d" style="background:${color(d.연수원)}"></span>${esc(d.연수원)}</span><br>`+
-        `<span class="title"${ended?' style="color:#9198ad"':''}>${esc(d.과정명)}</span>${tag}${delTag}</td>`+
+        `<span class="title"${ended?' style="color:#9198ad"':''}>${esc(d.과정명)}</span>${tag}${delTag}${nowTag}</td>`+
       `<td class="num credit">${d.학점?esc(d.학점):'<span class="muted">–</span>'}</td>`+
       `<td class="num chasi">${d.시간?esc(d.시간):'<span class="muted">–</span>'}</td>`+
       `<td class="topic">${d.주제?`<span class="topic-badge" style="background:${topicColor(d.주제)}1f;color:${topicColor(d.주제)}">${esc(d.주제)}</span>`:'<span class="muted">–</span>'}</td>`+
@@ -379,7 +420,8 @@ function render(){
       `</td></tr>`;
   }).join("");
   document.getElementById("empty").classList.toggle("hidden",rows.length>0);
-  document.getElementById("navTotal").textContent=DATA.length.toLocaleString();
+  const liveTotal=DATA.filter(d=>!del.has(d._key)).map(effective).filter(d=>d.서비스상태!=="종료").length;
+  document.getElementById("navTotal").textContent=liveTotal.toLocaleString();
   document.getElementById("crumbCount").textContent=rows.length.toLocaleString();
   document.getElementById("crumbSite").textContent=state.site||"전체";
   const nEdit=Object.keys(overrides.edits).length, nDel=overrides.deletes.length;
@@ -389,31 +431,47 @@ function render(){
 }
 
 function renderReport(){
-  const total=DATA.length, live=DATA.filter(d=>d.서비스상태!=="종료").length, end=total-live;
-  const months={}; DATA.forEach(d=>{const m=String(d.서비스일자).match(/^(\d{4}-\d{2})/); if(m)months[m[1]]=(months[m[1]]||0)+1;});
-  const mkeys=Object.keys(months).sort(); const last=mkeys.slice(-8);
-  const lastMonthNew=mkeys.length?months[mkeys[mkeys.length-1]]:0;
-  document.getElementById("kpis").innerHTML=[
-    ["전체 과정",total.toLocaleString(),""],["서비스중",live.toLocaleString(),""],
-    ["종료",end.toLocaleString(),""],["최근월 신규",lastMonthNew.toLocaleString(),(mkeys[mkeys.length-1]||"")]
-  ].map(k=>`<div class="kpi"><div class="k">${k[0]}${k[2]?` <small>${k[2]}</small>`:""}</div><div class="v">${k[1]}</div></div>`).join("");
-  const hold={}; DATA.forEach(d=>{if(d.서비스상태!=="종료")hold[d.연수원]=(hold[d.연수원]||0)+1;});
-  const sites=Object.keys(hold).sort((a,b)=>orderIdx(a)-orderIdx(b));
-  const max=Math.max(...sites.map(s=>hold[s]),1);
-  document.getElementById("holdBars").innerHTML=sites.map(s=>
-    `<div class="bar"><span class="nm">${esc(s)}</span>`+
-    `<span class="track"><span class="fill" style="width:${Math.round(hold[s]/max*100)}%;background:${color(s)}"></span></span>`+
-    `<span class="val">${hold[s]}</span></div>`).join("");
-  const mmax=Math.max(...last.map(m=>months[m]),1);
-  document.getElementById("trend").innerHTML=last.map(m=>{
-    const h=Math.round(months[m]/mmax*180)+6;
-    return `<div class="col"><div class="cv">${months[m]}</div><div class="cbar" style="height:${h}px"></div><div class="cx">${m.slice(5)}월</div></div>`;
+  const SITES=["비바샘","티처빌","아이스크림"];
+  const now=new Date();
+  // 최근 6개월 키
+  const mkeys=[]; for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1); mkeys.push(d.toISOString().slice(0,7));}
+  // 월×연수원 카운트 (신규 오픈 = 서비스일자 기준)
+  const cnt={}; SITES.forEach(s=>cnt[s]={});
+  DATA.forEach(d=>{ if(!SITES.includes(d.연수원))return;
+    const m=String(d.서비스일자||"").match(/^(\d{4}-\d{2})/); if(!m)return;
+    if(mkeys.includes(m[1])) cnt[d.연수원][m[1]]=(cnt[d.연수원][m[1]]||0)+1; });
+  const mmax=Math.max(1,...mkeys.flatMap(m=>SITES.map(s=>cnt[s][m]||0)));
+  // 그룹 막대: 월별로 3개 막대
+  document.getElementById("trend3").innerHTML=mkeys.map(m=>{
+    const bars=SITES.map(s=>{const v=cnt[s][m]||0; const h=Math.round(v/mmax*160)+(v?4:0);
+      return `<span class="gbar" title="${esc(s)} ${m}: ${v}건" style="height:${h}px;background:${color(s)}"><span class="gv">${v||""}</span></span>`;}).join("");
+    return `<div class="gcol"><div class="gbars">${bars}</div><div class="gx">${m.slice(5)}월</div></div>`;
   }).join("");
-  const recent=[...DATA].filter(d=>/^\d{4}-\d{2}/.test(d.서비스일자))
-    .sort((a,b)=>String(b.서비스일자).localeCompare(String(a.서비스일자))).slice(0,7);
-  document.getElementById("recent").innerHTML=recent.map(d=>
-    `<div class="r"><span class="d" style="width:7px;height:7px;border-radius:3px;background:${color(d.연수원)}"></span>`+
-    `<span class="rt">${esc(d.과정명)}</span><span class="rs">${esc(d.연수원)} · ${esc(d.서비스일자)}</span></div>`).join("");
+  document.getElementById("trend3legend").innerHTML=SITES.map(s=>
+    `<span class="lg"><span class="ld" style="background:${color(s)}"></span>${esc(s)}</span>`).join("");
+
+  // ── 전월 신규 과정 리뷰 ──
+  const pm=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().slice(0,7);
+  const pmLabel=`${pm.slice(0,4)}년 ${pm.slice(5)}월`;
+  document.getElementById("reviewTitle").textContent=`전월 신규 과정 리뷰 (${pmLabel})`;
+  document.getElementById("reviewDesc").textContent=`${pmLabel}에 새로 오픈된 과정을 연수원별로 정리했습니다.`;
+  document.getElementById("reviews").innerHTML=SITES.map(s=>{
+    const items=DATA.filter(d=>d.연수원===s && String(d.서비스일자||"").startsWith(pm));
+    const n=items.length;
+    // 주제 분포
+    const tc={}; items.forEach(d=>{const t=(d.주제||"").trim(); if(t)tc[t]=(tc[t]||0)+1;});
+    const topics=Object.keys(tc).sort((a,b)=>tc[b]-tc[a]).map(t=>`${esc(t)} ${tc[t]}`).join(" · ");
+    // 대표 과정명 (최대 5)
+    const names=items.slice(0,5).map(d=>{const c=String(d.학점||"").trim();
+      const lab=c?(/[가-힣]/.test(c)?c:`${c}학점`):"";   // 이미 한글 있으면 그대로, 숫자면 N학점
+      return `<li>${esc(d.과정명)}${lab?` <span class="rc">(${esc(lab)})</span>`:""}</li>`;}).join("");
+    const more=n>5?`<div class="rmore">외 ${n-5}건</div>`:"";
+    return `<div class="rvcard" style="--rc:${color(s)}">`+
+      `<div class="rvhead"><span class="rvdot" style="background:${color(s)}"></span><b>${esc(s)}</b><span class="rvn">${n}건</span></div>`+
+      (n?`<div class="rvtopic">${topics?`주제: ${topics}`:"주제 분류 없음"}</div><ul class="rvlist">${names}</ul>${more}`
+         :`<div class="rvempty">신규 과정 없음</div>`)+
+    `</div>`;
+  }).join("");
 }
 
 document.getElementById("q").oninput=e=>{state.q=e.target.value;render();};
@@ -455,7 +513,8 @@ function openEdit(key){
     '<div class="m-row"><label>학점<input id="m_credit" type="text"></label>'+
     '<label>차시<input id="m_hours" type="text"></label></div>'+
     '<label>주제<input id="m_topic" type="text"></label>'+
-    '<label>서비스일자<input id="m_date" type="date"></label>'+
+    '<div class="m-row"><label>서비스일자<input id="m_date" type="date"></label>'+
+    '<label>상태<select id="m_status"><option value="서비스중">서비스중</option><option value="종료">종료</option></select></label></div>'+
     '<div class="m-actions"><button class="btn danger" id="m_delete">삭제</button>'+
     '<span class="spacer"></span><button class="btn" id="m_revert">되돌리기</button>'+
     '<button class="btn" id="m_cancel">취소</button>'+
@@ -466,6 +525,7 @@ function openEdit(key){
   back.querySelector("#m_hours").value=d.시간||"";
   back.querySelector("#m_topic").value=d.주제||"";
   back.querySelector("#m_date").value=dateVal;
+  back.querySelector("#m_status").value=(d.서비스상태==="종료")?"종료":"서비스중";
   back.onclick=e=>{ if(e.target===back) closeEdit(); };
   back.querySelector("#m_cancel").onclick=closeEdit;
   back.querySelector("#m_save").onclick=()=>{
@@ -473,7 +533,8 @@ function openEdit(key){
       학점:back.querySelector("#m_credit").value.trim(),
       시간:back.querySelector("#m_hours").value.trim(),
       주제:back.querySelector("#m_topic").value.trim(),
-      서비스일자:back.querySelector("#m_date").value };
+      서비스일자:back.querySelector("#m_date").value,
+      서비스상태:back.querySelector("#m_status").value };
     saveOv(); render(); closeEdit(); toast("수정됨 — 내보내기로 영구반영");
   };
   back.querySelector("#m_revert").onclick=()=>{
@@ -497,7 +558,6 @@ document.getElementById("copyAll").onclick=()=>{if(!currentRows.length){toast("�
   copyText(COPY_COLS.join("\t")+"\n"+currentRows.map(tsvOf).join("\n"));};
 document.querySelectorAll(".nav a[data-view]").forEach(a=>a.onclick=()=>{ if(a.dataset.view==="list"){state.site="";syncSiteNav();} showView(a.dataset.view); });
 document.getElementById("refresh").onclick=()=>{render();toast("최신 데이터로 갱신했습니다");};
-document.getElementById("aiBtn").onclick=()=>toast("AI 인사이트는 준비 중입니다");
 
 fetch('data/courses.json',{cache:'no-store'}).then(r=>r.json()).then(rows=>{DATA=rows||[];buildSiteNav();buildFilters();render();}).catch(e=>{DATA=[];buildSiteNav();buildFilters();render();toast('데이터를 불러오지 못했습니다');});
 </script>
