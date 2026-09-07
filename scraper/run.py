@@ -18,6 +18,10 @@ FULL_CATALOG_SITES = ['티처빌', '사제동행']  # 종료 자동정리 대상
 GRACE_RUNS = 2   # 연속 N회 미노출 시 종료 확정
 # 일회성: 여기 넣은 연수원의 '종료' 딱지를 전부 '서비스중'으로 되돌린다(정리 후 [] 로 비우면 됨).
 RESET_ENDED_SITES = ['아이스크림']
+# 수집 불안정 사이트: 새로 잡혀도 '신규(오늘 날짜)'가 아니라 '기존(날짜 비움)'으로 넣는다(가짜 신규 방지).
+BACKFILL_APPEND_SITES = ['아이스크림']
+# 일회성: 여기 넣은 연수원의 기존 '신규' 표기를 전부 '기존 + 서비스일자 비움'으로 정리(정리 후 [] 로 비우면 됨).
+RESET_NEW_SITES = ['아이스크림']
 # 비바샘(자사) 시드: 크롤링 대상이 아니므로 이 파일에서 없는 과정만 병합한다.
 VIVASAM_SEED_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'vivasam_seed.json')
 
@@ -84,6 +88,15 @@ def main():
         if fixed:
             print(f'[정리] 잘못 찍힌 신규 {fixed}건 → 기존 + 서비스일자 비움')
 
+    # ── 일회성 정리: 특정 연수원의 '신규' 표기를 '기존 + 서비스일자 비움'으로 정리(불안정 수집 오라벨 제거) ──
+    if RESET_NEW_SITES:
+        rn = 0
+        for r in state:
+            if r.get('연수원') in RESET_NEW_SITES and r.get('구분') == '신규':
+                r['구분'] = '기존'; r['서비스일자'] = ''; r['신규오픈월'] = ''; rn += 1
+        if rn:
+            print(f'[정리] {RESET_NEW_SITES} 신규→기존(날짜비움) {rn}건')
+
     # ── 일회성 정리: 특정 연수원의 '종료' 딱지를 '서비스중'으로 되돌림(이름 불일치 오탐 복구) ──
     if RESET_ENDED_SITES:
         reset = 0
@@ -115,11 +128,11 @@ def main():
                     '신규오픈월': today()[:7], 'url': c.url, '_key': key, '미노출횟수': 0,
                 }
                 state.append(rec); seen[key] = rec; fresh.append(rec)
-        # 대량유입(전체수집/백필)이면 진짜 신규가 아니므로 기존+날짜비움 처리
-        if seeding or len(fresh) >= BULK_THRESHOLD:
+        # 대량유입(전체수집/백필)이거나, 수집 불안정 사이트면 진짜 신규가 아니므로 기존+날짜비움 처리
+        if seeding or len(fresh) >= BULK_THRESHOLD or name in BACKFILL_APPEND_SITES:
             for rec in fresh:
                 rec['구분'] = '기존'; rec['서비스일자'] = ''; rec['신규오픈월'] = ''
-            label = '백필' if seeding else '대량(기존처리)'
+            label = '백필' if seeding else ('불안정(기존처리)' if name in BACKFILL_APPEND_SITES else '대량(기존처리)')
             print(f'[{name}] 수집 {len(courses)} / {label} {len(fresh)}')
         else:
             total_new += len(fresh)
