@@ -114,8 +114,18 @@ def load_all(page, more_selector: str | None = None, card_selector: str | None =
         # 2) 스크롤(무한 스크롤 대응)
         if scroll:
             page.mouse.wheel(0, 30000)
-        page.wait_for_timeout(900)
-        # 3) 진행 판정은 '카드가 늘었는지'로만 한다(버튼만 남아 헛클릭하는 것 방지)
+        # 3) 카드가 '실제로 늘 때까지' 최대 5초 대기(고정 대기 대신 → 느린 네트워크에도 끝까지 로드)
+        page.wait_for_timeout(400)  # 최소 정착 시간
+        if card_selector:
+            try:
+                page.wait_for_function(
+                    "([sel, prev]) => document.querySelectorAll(sel).length > prev",
+                    arg=[card_selector, last], timeout=5000)
+            except Exception:
+                pass
+        else:
+            page.wait_for_timeout(900)
+        # 4) 진행 판정은 '카드가 늘었는지'로만 한다(버튼만 남아 헛클릭하는 것 방지)
         cur = count()
         if card_selector:
             if cur > last:
@@ -123,7 +133,7 @@ def load_all(page, more_selector: str | None = None, card_selector: str | None =
                 stale = 0
             else:
                 stale += 1
-            if stale >= 2:      # 2회 연속 안 늘면 종료
+            if stale >= 4:      # 4회 연속 안 늘면 종료(느린 응답 몇 번은 관용)
                 break
             if not btn and cur == last:  # 누를 것도 없고 안 늘면 종료
                 break
