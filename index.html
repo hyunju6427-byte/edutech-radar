@@ -9,10 +9,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --brand:#6a49e6; --brand2:#3f74f0; --brand-ink:#4a2fb8; --brand-bg:#efeafe; --brand-bg2:#e7ecfe;
-    --grad:linear-gradient(105deg,#6a49e6 0%,#3f74f0 100%);
+    --brand:#4b5163; --brand-ink:#2b2f3d; --brand-bg:#eef0f2;
+    --grad:#4b5163;
     --ink:#1e2440; --ink-soft:#5b6178; --ink-faint:#9198ad;
-    --app:#f5f5fb; --surface:#ffffff; --line:#e9e7f3; --line-strong:#d9d5ea;
+    --app:#f6f6f8; --surface:#ffffff; --line:#e8e8ec; --line-strong:#d7d7de;
     --fresh:#0e8a6b; --fresh-bg:#e6f5ef; --end:#9198ad; --end-bg:#eeecf5;
     --c-비바샘:#7c3aed; --c-티처빌:#2563eb; --c-아이스크림:#f97316; --c-한국교원:#6b7280;
     --c-사제동행:#16a34a; --c-교육사랑:#c4b5fd; --c-하이컨텐츠:#dc2626; --c-T셀파:#0ea5e9;
@@ -29,10 +29,10 @@
     padding:24px 18px; position:sticky; top:0; height:100vh; overflow-y:auto; display:flex; flex-direction:column}
   .brandrow{display:flex; align-items:center; gap:10px}
   .logo{width:36px; height:36px; border-radius:11px; background:var(--grad); color:#fff; font-weight:700;
-    display:grid; place-items:center; font-size:19px; box-shadow:0 4px 12px rgba(106,73,230,.28)}
+    display:grid; place-items:center; font-size:19px; box-shadow:0 4px 12px rgba(43,47,61,.18)}
   .brandrow .name{font-weight:600; font-size:15px; letter-spacing:-.01em}
   .headline{margin:24px 0 2px; font-size:27px; font-weight:700; letter-spacing:-.03em; line-height:1.18;
-    background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent}
+    color:var(--ink)}
   .headline .serif{font-family:"Fraunces",serif; font-style:italic; font-weight:600}
   .tag{color:var(--ink-soft); font-size:12.5px; margin-top:12px; line-height:1.55}
   .daterow{display:flex; align-items:center; justify-content:space-between; margin:18px 0 12px; font-size:12.5px}
@@ -96,7 +96,7 @@
 
   .board{background:var(--surface); border:1px solid var(--line); border-radius:18px; overflow:hidden; box-shadow:0 1px 2px rgba(30,36,64,.03)}
   table{width:100%; border-collapse:collapse}
-  thead th{position:sticky; top:0; background:#faf9fe; text-align:left; font-size:12.5px; font-weight:600;
+  thead th{position:sticky; top:0; background:#f8f8fa; text-align:left; font-size:12.5px; font-weight:600;
     color:var(--ink-soft); padding:12px 15px; border-bottom:1px solid var(--line); z-index:1}
   th.num,td.num{text-align:center; font-variant-numeric:tabular-nums; white-space:nowrap; width:66px}
   th.date,td.date{white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--ink-soft); width:118px}
@@ -110,7 +110,7 @@
   tr.rowdel{opacity:.5}
   tr.rowdel .title{text-decoration:line-through}
   .t-del{color:#c2413f; background:#fbe9e9}
-  tr.rownow{background:linear-gradient(90deg,#fff8e6,#fffdf7)}
+  tr.rownow{background:#fdf6e3}
   tr.rownow:hover{background:#fff4d6}
   tr.rownow td.name{border-left-color:#f0b000}
   .t-now{color:#9a6a00; background:#ffedb3}
@@ -134,11 +134,13 @@
   .modal .m-actions{display:flex; align-items:center; gap:8px; margin-top:6px}
   tbody td{padding:13px 15px; border-bottom:1px solid var(--line); vertical-align:middle}
   tbody tr:last-child td{border-bottom:0}
-  tbody tr:hover{background:#faf9fe}
+  tbody tr:hover{background:#f8f8fa}
   td.name{border-left:3px solid var(--rc,transparent)}
   .src{display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-faint); margin-bottom:3px}
   .src .d{width:7px;height:7px;border-radius:3px}
   .title{font-weight:500; letter-spacing:-.005em}
+  a.title{color:inherit; text-decoration:none}
+  a.title:hover{color:var(--brand); text-decoration:underline}
   .tag2{display:inline-block; margin-left:8px; padding:1px 7px; font-size:11px; font-weight:600; border-radius:5px; vertical-align:middle}
   .t-end{color:var(--end); background:var(--end-bg)}
   .muted{color:var(--ink-faint)}
@@ -238,7 +240,7 @@
     <div class="sitenav" id="siteNav"></div>
 
     <div class="sec">REFERENCE · 참고</div>
-    <nav class="nav"><a data-view="report"><span class="l">📊 경쟁사 분석 보고서 <span class="badge">BETA</span></span></a></nav>
+    <nav class="nav"><a data-view="report"><span class="l">경쟁사 분석 보고서 <span class="badge">BETA</span></span></a></nav>
 
     <div class="grow"></div>
   </aside>
@@ -246,7 +248,7 @@
   <main class="main">
     <section id="view-list">
       <div class="topbar">
-        <div class="search"><span class="ic">🔍</span><input id="q" placeholder="검색 — 예: AI, 하브루타, 박종인"></div>
+        <div class="search"><span class="ic" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span><input id="q" placeholder="검색 — 예: AI, 하브루타, 박종인"></div>
         <div class="controls">
           <span class="lab">정렬</span>
           <select class="sel" id="sortSel">
@@ -274,8 +276,8 @@
           <select class="sel" id="topicSel"><option value="">전체</option></select>
           <label class="chk"><input type="checkbox" id="showDeleted"> 삭제 항목 표시</label>
           <span class="spacer"></span>
-          <button class="btn" id="exportEdits">📝 수정분 내보내기</button>
-          <button class="btn" id="copyAll">⧉ 표시 항목 복사</button>
+          <button class="btn" id="exportEdits">수정분 내보내기</button>
+          <button class="btn" id="copyAll">표시 항목 복사</button>
         </div>
       </div>
       <div class="crumb"><span class="u" id="crumbSite">전체</span> › <b>연수</b> <b id="crumbCount">0</b>건 · <span id="updated"></span></div>
@@ -319,7 +321,7 @@ let DATA = [];
 const ORDER = ["비바샘","티처빌","아이스크림","한국교원","사제동행","교육사랑","하이컨텐츠","T셀파","유니텔","에듀니티","카운피아","창비"];
 const orderIdx = s => { const i=ORDER.indexOf(s); return i<0?999:i; };
 const ym = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");  // 지역시간 기준 YYYY-MM (UTC 시차 버그 방지)
-function color(s){ const v=getComputedStyle(document.documentElement).getPropertyValue('--c-'+s).trim(); return v||'#6a49e6'; }
+function color(s){ const v=getComputedStyle(document.documentElement).getPropertyValue('--c-'+s).trim(); return v||'#4b5163'; }
 const TOPIC_PALETTE=["#6a49e6","#3f74f0","#14b8a6","#2e9e6b","#e0663a","#d24d6b","#c78a2b","#4aa0d8","#a23e9e","#5f8a2e","#b8862b","#7c4ce0","#0e8a6b","#c2413f","#4356c0","#2f8f8f"];
 function topicColor(t){let h=0;for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))>>>0;return TOPIC_PALETTE[h%TOPIC_PALETTE.length];}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
@@ -429,10 +431,14 @@ function render(){
     const delTag=isDel?'<span class="tag2 t-del">삭제됨</span>':'';
     const nowTag=isNow?'<span class="tag2 t-now">이번 달</span>':'';
     const cls=(isDel?'rowdel ':'')+(isNow?'rownow':'');
+    const endedStyle=ended?' style="color:#9198ad"':'';
+    const nameTag=d.url
+      ? `<a class="title" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer"${endedStyle}>${esc(d.과정명)}</a>`
+      : `<span class="title"${endedStyle}>${esc(d.과정명)}</span>`;
     return `<tr${cls?` class="${cls.trim()}"`:''}>`+
       `<td class="name" style="--rc:${color(d.연수원)};border-left:3px solid ${color(d.연수원)}">`+
         `<span class="src"><span class="d" style="background:${color(d.연수원)}"></span>${esc(d.연수원)}</span><br>`+
-        `<span class="title"${ended?' style="color:#9198ad"':''}>${esc(d.과정명)}</span>${tag}${delTag}${nowTag}</td>`+
+        `${nameTag}${tag}${delTag}${nowTag}</td>`+
       `<td class="num credit">${d.학점?esc(d.학점):'<span class="muted">–</span>'}</td>`+
       `<td class="num chasi">${d.시간?esc(d.시간):'<span class="muted">–</span>'}</td>`+
       `<td class="topic">${d.주제?`<span class="topic-badge" style="background:${topicColor(d.주제)}1f;color:${topicColor(d.주제)}">${esc(d.주제)}</span>`:'<span class="muted">–</span>'}</td>`+

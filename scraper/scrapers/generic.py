@@ -135,7 +135,7 @@ def run_spec(spec: SiteSpec) -> list[Course]:
             elif href:
                 url = urljoin(spec.list_url, href)
             else:
-                url = spec.list_url
+                url = ""   # 상세 URL을 못 찾으면 비워둔다(목록 URL을 넣으면 "상세 링크 있음"으로 오인됨)
             open_month = parse_open_month(_txt(card, spec.open_month_sel) or raw)
 
             out.append(Course(

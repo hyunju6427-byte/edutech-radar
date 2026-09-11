@@ -3,6 +3,7 @@ import config
 from scrapers.generic import SiteSpec
 
 # ── 티처빌 ── 카드: div.info-box / ID: .info-item[data-seq] / href 없음(onclick)
+# 상세URL: 과정명(p.text) 클릭 시 실제 이동 결과를 확인해 확정(division=T, t=G005는 카테고리 무관 고정값으로 실측 확인됨).
 TEACHERVILLE = SiteSpec(
     site="티처빌",
     list_url=config.SITES["티처빌"],
@@ -15,6 +16,7 @@ TEACHERVILLE = SiteSpec(
     id_attr="data-seq",
     id_sel=".info-item",
     link_sel="a",
+    url_template="https://www.teacherville.co.kr/trainapply/newCourseDetail.edu?division=T&courseSeq={id}&t=G005",
     more_selector="text=더보기, text=더 보기, .btn_more, .btn-more, .more, button.more, a.more, .list_more, .paging_more, .btnMore, .moreBtn",
 )
 
@@ -27,11 +29,14 @@ ISCREAM = SiteSpec(
     name_sel="a.tit",
     field_sel=".crs_info span:nth-of-type(2)",
     meta_sel=".crs_info",              # "15차시(1학점)"
-    link_sel="a",
+    link_sel="a.thumb_lnk",
     more_selector="#divMore, text=더보기, .btn_more, .btn-more, .more, button.more, a.more",
 )
 
 # ── 한국교원 ── td.left 카드 / ID: .photo onclick detail_view('s1898') / 분야 미표기
+# 상세URL: 사이트 JS의 detail_view(gcode)는 보통 subject_view.asp?inx=1&jnx=2&gcode=<gcode>로 이동(실측 확인).
+# 단, 사이트 JS에 소수(~15개) gcode는 group.asp/institutionView.asp 등 다른 페이지로 하드코딩 예외 처리되어 있어
+# 그 과정들만 링크가 틀릴 수 있음 — 현재 SKIP_SITES(IP차단, 수동입력)라 당장 영향은 없음.
 HSTUDY = SiteSpec(
     site="한국교원",
     list_url=config.SITES["한국교원"],
@@ -43,6 +48,7 @@ HSTUDY = SiteSpec(
     id_sel=".photo",
     id_attr="onclick",
     link_sel="a",
+    url_template="https://www.hstudy.co.kr/newmain/subject_view.asp?inx=1&jnx=2&gcode={id}",
     more_selector="",
     http_html=True,      # hstudy는 브라우저 접속이 막혀 직접 HTTP로 HTML을 받아 파싱
 )

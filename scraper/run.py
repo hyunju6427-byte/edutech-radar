@@ -5,7 +5,15 @@
 """
 import json, os, re, datetime, sys
 
+# 로컬 Windows 콘솔(cp949)에서 한글/특수문자 로그 출력 시 깨지지 않도록(GitHub Actions는 이미 UTF-8이라 영향 없음)
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 sys.path.insert(0, os.path.dirname(__file__))
+import config
 from scrapers.generic import run_spec
 from scrapers.sites import SPECS
 
@@ -23,6 +31,9 @@ RESET_ENDED_SITES = ['아이스크림']
 BACKFILL_APPEND_SITES = []
 # 일회성: 여기 넣은 연수원의 기존 '신규' 표기를 전부 '기존 + 서비스일자 비움'으로 정리(정리 후 [] 로 비우면 됨).
 RESET_NEW_SITES = ['아이스크림']
+# 일회성: 상세 URL 로직이 없던 시절 목록페이지 URL이 잘못 채워진 값을 비운다(정리 후 [] 로 비우면 됨).
+# (해당 사이트의 url_template이 준비되면 다음 실행부터 진짜 상세 URL로 다시 채워짐)
+CLEAN_FAKE_URL_SITES = ['티처빌']
 # 비바샘(자사) 시드: 크롤링 대상이 아니므로 이 파일에서 없는 과정만 병합한다.
 VIVASAM_SEED_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'vivasam_seed.json')
 
@@ -107,6 +118,16 @@ def main():
         if reset:
             print(f'[정리] {RESET_ENDED_SITES} 종료→서비스중 복구 {reset}건')
 
+    # ── 일회성 정리: url 로직 도입 전 목록페이지 URL이 잘못 채워진 값을 비움(다음 수집 때 진짜 값으로 재백필됨) ──
+    if CLEAN_FAKE_URL_SITES:
+        cu = 0
+        for r in state:
+            site = r.get('연수원')
+            if site in CLEAN_FAKE_URL_SITES and r.get('url') and r.get('url') == config.SITES.get(site):
+                r['url'] = ''; cu += 1
+        if cu:
+            print(f'[정리] {CLEAN_FAKE_URL_SITES} 목록URL 오채움 {cu}건 → 비움')
+
     for name, spec in SPECS.items():
         if name in SKIP_SITES:
             print(f'[{name}] 자동수집 제외(SKIP_SITES) — 기존 데이터 유지')
@@ -118,6 +139,7 @@ def main():
             continue
         live[name] = set()
         fresh = []
+        url_filled = 0
         for c in courses:
             key = f'{c.site}::{norm(c.name)}'
             live[name].add(key)
@@ -129,16 +151,19 @@ def main():
                     '신규오픈월': today()[:7], 'url': c.url, '_key': key, '미노출횟수': 0,
                 }
                 state.append(rec); seen[key] = rec; fresh.append(rec)
+            elif c.url and not seen[key].get('url'):
+                # 기존 과정: 상세 URL이 비어있던 걸 이번 수집값으로 채운다(과거엔 url 로직이 없어 비어있던 레코드 백필)
+                seen[key]['url'] = c.url; url_filled += 1
         # 대량유입(전체수집/백필)이거나, 수집 불안정 사이트면 진짜 신규가 아니므로 기존+날짜비움 처리
         if seeding or len(fresh) >= BULK_THRESHOLD or name in BACKFILL_APPEND_SITES:
             for rec in fresh:
                 rec['구분'] = '기존'; rec['서비스일자'] = ''; rec['신규오픈월'] = ''
             label = '백필' if seeding else ('불안정(기존처리)' if name in BACKFILL_APPEND_SITES else '대량(기존처리)')
-            print(f'[{name}] 수집 {len(courses)} / {label} {len(fresh)}')
+            print(f'[{name}] 수집 {len(courses)} / {label} {len(fresh)}' + (f' / url백필 {url_filled}' if url_filled else ''))
         else:
             total_new += len(fresh)
             flag = '' if courses else '  ← 0건(선택자 확인 필요)'
-            print(f'[{name}] 수집 {len(courses)} / 신규 {len(fresh)}{flag}')
+            print(f'[{name}] 수집 {len(courses)} / 신규 {len(fresh)}{flag}' + (f' / url백필 {url_filled}' if url_filled else ''))
 
     # ── 종료 자동정리 ──
     if not seeding and FULL_CATALOG_SITES:
