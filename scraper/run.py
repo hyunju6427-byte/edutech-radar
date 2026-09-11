@@ -3,7 +3,7 @@
 
 로컬 확인:  cd scraper && pip install -r requirements.txt && python -m playwright install chromium && python run.py
 """
-import json, os, re, datetime, sys
+import json, os, re, datetime, sys, types
 
 # 로컬 Windows 콘솔(cp949)에서 한글/특수문자 로그 출력 시 깨지지 않도록(GitHub Actions는 이미 UTF-8이라 영향 없음)
 for _stream in (sys.stdout, sys.stderr):
@@ -22,10 +22,11 @@ DATA_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'courses.json'
 # ── 종료 자동정리 설정 ─────────────────────────────────────────
 # 전체 목록을 '빠짐없이' 긁는 사이트만 넣는다(아니면 정상 과정이 매번 미노출로 잡혀 오판).
 # 처음엔 비워두고, 운영하며 확신이 서면 예: ['사제동행','한국교원'] 추가.
-FULL_CATALOG_SITES = ['티처빌', '사제동행']  # 종료 자동정리 대상(아이스크림은 이름 불일치로 제외)
+FULL_CATALOG_SITES = ['티처빌', '사제동행', '아이스크림']  # 종료 자동정리 대상
+# (아이스크림은 예전엔 이름 불일치로 제외했으나, norm_loose 보조매칭 도입 후 재활성화 — 2026-09-11)
 GRACE_RUNS = 2   # 연속 N회 미노출 시 종료 확정
 # 일회성: 여기 넣은 연수원의 '종료' 딱지를 전부 '서비스중'으로 되돌린다(정리 후 [] 로 비우면 됨).
-RESET_ENDED_SITES = ['아이스크림']
+RESET_ENDED_SITES = []
 # 수집 불안정 사이트: 새로 잡혀도 '신규(오늘 날짜)'가 아니라 '기존(날짜 비움)'으로 넣는다(가짜 신규 방지).
 # (아이스크림은 더보기 로딩 안정화 후 자동 신규 감지 재활성화 → 비움)
 BACKFILL_APPEND_SITES = []
@@ -38,8 +39,13 @@ CLEAN_FAKE_URL_SITES = ['티처빌']
 VIVASAM_SEED_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'vivasam_seed.json')
 
 # 자동 수집에서 제외할 연수원(기존 데이터는 대시보드에 그대로 남음).
-# 한국교원(hstudy)은 GitHub 서버 IP 접근이 막혀 제외. 차단 해제/국내수집 붙이면 비우면 됨.
-SKIP_SITES = ['한국교원']
+SKIP_SITES = []
+
+# 한국교원(hstudy): GitHub Actions 서버 IP가 사이트에서 차단돼 있어 직접 수집이 안 된다.
+# 대신 국내 IP(사용자 PC)에서 hstudy_only.py로 매일 미리 수집해둔 파일을 여기서 읽어 병합한다.
+# 파일이 없거나 PREFETCH_MAX_AGE_HOURS보다 오래됐으면 이번 실행은 건너뛰고 기존 데이터를 유지한다.
+PREFETCHED_SITES = {'한국교원': os.path.join(os.path.dirname(__file__), '..', 'data', 'hstudy_raw.json')}
+PREFETCH_MAX_AGE_HOURS = 30   # 매일 08:00 KST 실행 기준(하루+여유)
 
 # 전체수집 전환 시 '오늘'로 잘못 찍힌 대량유입분 정리용(일회성).
 # 구분=신규인데 서비스일자가 이 날짜 이하면 → 기존 + 서비스일자 비움. 정리 끝나면 '' 로 두면 됨.
@@ -55,6 +61,28 @@ OVERRIDES_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'override
 
 def today(): return datetime.date.today().isoformat()
 def norm(s): return re.sub(r'\s+', '', str(s or '')).lower()
+# 종료 자동정리 오탐 방지용: 공백 외에 흔히 붙었다 빠졌다 하는 문장부호도 무시(느낌표/따옴표/괄호/가운뎃점 등).
+# _key(=norm)는 그대로 두고, "오늘 목록에 있는지" 판정에서만 이 느슨한 비교를 보조로 쓴다.
+def norm_loose(s): return re.sub(r'[\s\-_(),.!?~:;\'"\[\]·]+', '', str(s or '')).lower()
+
+def load_prefetched(name, path):
+    """국내 IP에서 hstudy_only.py 등으로 미리 수집해둔 결과 파일을 읽어 Course처럼 다룬다.
+    파일이 없거나 너무 오래됐으면 None(이번 실행은 건너뜀 → 기존 데이터 유지)."""
+    if not os.path.exists(path):
+        print(f'[{name}] 사전수집 파일 없음({os.path.basename(path)}) — 이번엔 건너뜀, 기존 데이터 유지')
+        return None
+    try:
+        with open(path, encoding='utf-8') as f:
+            payload = json.load(f)
+        collected_at = datetime.datetime.fromisoformat(payload['collected_at'])
+        age_h = (datetime.datetime.now() - collected_at).total_seconds() / 3600
+        if age_h > PREFETCH_MAX_AGE_HOURS:
+            print(f'[{name}] 사전수집 파일이 {age_h:.0f}시간 전 것 — 오래돼서 이번엔 건너뜀, 기존 데이터 유지')
+            return None
+        return [types.SimpleNamespace(**c) for c in payload['courses']]
+    except Exception as e:
+        print(f'[{name}] 사전수집 파일 처리 오류: {e} — 건너뜀')
+        return None
 
 def load():
     if os.path.exists(DATA_PATH):
@@ -72,6 +100,7 @@ def main():
     seen = {r['_key']: r for r in state}
     seeding = len(state) == 0          # courses.json이 비었으면 최초 백필
     live = {}                          # site -> set(_key) : 이번에 '현재 서비스중'으로 확인된 것
+    live_loose = {}                    # site -> set(norm_loose(과정명)) : 문장부호 무시 보조 대조용
     total_new = 0
 
     # ── 비바샘 시드 병합: 없는 과정만 추가(기존 데이터는 건드리지 않음) ──
@@ -132,17 +161,24 @@ def main():
         if name in SKIP_SITES:
             print(f'[{name}] 자동수집 제외(SKIP_SITES) — 기존 데이터 유지')
             continue
-        try:
-            courses = run_spec(spec)
-        except Exception as e:
-            print(f'[{name}] 수집 오류: {e}')
-            continue
+        if name in PREFETCHED_SITES:
+            courses = load_prefetched(name, PREFETCHED_SITES[name])
+            if courses is None:
+                continue
+        else:
+            try:
+                courses = run_spec(spec)
+            except Exception as e:
+                print(f'[{name}] 수집 오류: {e}')
+                continue
         live[name] = set()
+        live_loose[name] = set()
         fresh = []
         url_filled = 0
         for c in courses:
             key = f'{c.site}::{norm(c.name)}'
             live[name].add(key)
+            live_loose[name].add(norm_loose(c.name))
             if key not in seen:
                 rec = {
                     '연수원': c.site, '과정명': c.name, '학점': c.credit, '시간': c.hours,
@@ -172,7 +208,10 @@ def main():
             site = r['연수원']
             if site not in FULL_CATALOG_SITES or site not in live:
                 continue
-            if r['_key'] in live[site]:
+            # 정확한 키가 안 잡혀도, 문장부호만 다른 채 오늘 목록에 그대로 있으면 '있음'으로 본다
+            # (사이트가 느낌표/따옴표/괄호를 붙였다 뺐다 해서 키가 흔들리는 경우의 오탐 방지).
+            still_here = r['_key'] in live[site] or norm_loose(r.get('과정명')) in live_loose.get(site, set())
+            if still_here:
                 if r.get('미노출횟수'): r['미노출횟수'] = 0
                 if r.get('서비스상태') == '종료':
                     r['서비스상태'] = '서비스중'; r['종료확인일'] = ''; revived += 1
