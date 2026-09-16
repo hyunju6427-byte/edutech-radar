@@ -53,6 +53,7 @@ class SiteSpec:
     require_sel: str = ""
     more_selector: str = ""
     http_html: bool = False   # True면 브라우저 대신 직접 HTTP로 HTML을 받아 파싱(봇 차단 우회)
+    name_strip_re: str = ""   # 과정명에 붙는 사이트 고유 꼬리표 제거용 정규식(예: 에듀니티 "[상시연수]"/"-직무")
 
 
 def _txt(node, sel: str) -> str:
@@ -132,6 +133,8 @@ def run_spec(spec: SiteSpec) -> list[Course]:
                     continue
 
                 name = _txt(card, spec.name_sel) or raw.split("\n")[0][:120]
+                if spec.name_strip_re:
+                    name = clean(re.sub(spec.name_strip_re, "", name))
                 meta_text = _txt(card, spec.meta_sel) or raw
                 link = card.query_selector(spec.link_sel)
                 href = link.get_attribute("href") if link else ""

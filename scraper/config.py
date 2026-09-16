@@ -17,6 +17,7 @@ SITES = {
         "https://counpia.com/ncs/main.html?category_id=A00010005&parent_two=A000100050001",
         "https://counpia.com/ncs/main.html?category_id=A00010005&parent_two=A000100050002",
     ],
+    "에듀니티": "https://happy.eduniety.net/html/online/list/?isonoff=ON",
 }
 
 # Playwright 동작

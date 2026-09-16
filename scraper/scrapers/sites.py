@@ -116,6 +116,22 @@ COUNPIA = SiteSpec(
     more_selector="",
 )
 
+# ── 에듀니티 ── 카드: div.newclass / 진짜 href(a[href*=/preview/?p_subj=]) 있어 id_attr 불필요
+# 학점·주제 표기가 카드에 없음(항상 공란) — 비바샘과 같은 성격의 제약.
+# 과정명에 "[상시연수]"/"-직무" 꼬리표가 붙어 나옴(이 목록 자체가 "직무&상시연수" 필터라 전부 동일하게
+# 붙음, 정보성 없음) — 기존 데이터와 이름을 맞추려면 제거해야 함. "[초등]"/"[중등]" 등 다른 대괄호
+# 태그는 실제 제목의 일부라 그대로 둔다.
+EDUNIETY = SiteSpec(
+    site="에듀니티",
+    list_url=config.SITES["에듀니티"],
+    wait_selector="div.newclass",
+    card="div.newclass",
+    name_sel="li:not(.img) a[href*='/preview/']",  # 썸네일 li의 a는 이미지뿐이라 제외(제목 span 유무가 카드마다 달라 a 전체를 잡음)
+    link_sel="a[href*='/preview/']",
+    name_strip_re=r"\[상시연수\]\s*|-직무$",
+    more_selector="",
+)
+
 SPECS = {
     "티처빌": TEACHERVILLE,
     "아이스크림": ISCREAM,
@@ -124,4 +140,5 @@ SPECS = {
     "교육사랑": EDULOVE,
     "T셀파": TSHERPA,
     "카운피아": COUNPIA,
+    "에듀니티": EDUNIETY,
 }
