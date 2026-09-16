@@ -12,9 +12,10 @@ from scrapers.base import (browser_page, load_all, clean,
                            parse_credit, parse_hours, parse_open_month)
 
 _ID_IN_URL = re.compile(r"(?:classKey|courseSeq|crsId|crsCd|seq|code|id|no|key)=([\w-]+)", re.I)
-# onclick="fn('s1898')" 처럼 따옴표 있는 문자열 ID, onclick="fn(2014)" 처럼 따옴표 없는 숫자 ID 둘 다 지원.
-# 여는 괄호 바로 뒤 첫 인자에 고정해서(다른 곳의 우연한 단어와 잘못 매칭되는 것 방지).
-_ID_IN_CALL = re.compile(r"""\(\s*['"]?([\w-]+)['"]?\s*[,)]""")
+# onclick="fn('s1898')" / onclick="fn(2014)" / onclick="fn('a','s0851','999')" 등
+# 함수 호출의 괄호 안 인자를 전부 뽑아서 spec.id_call_arg번째(기본 0=첫 인자)를 쓴다.
+# (하이컨텐츠처럼 진짜 ID가 첫 인자가 아닌 경우 대응)
+_ID_CALL_ARGS = re.compile(r"\(([^)]*)\)")
 
 
 def _fetch_html(url: str) -> str:
@@ -49,6 +50,7 @@ class SiteSpec:
     link_sel: str = "a"
     id_attr: str = ""
     id_sel: str = ""
+    id_call_arg: int = 0   # onclick="fn(a,b,c)"에서 진짜 ID가 몇 번째 인자인지(0=첫 인자, 기본값)
     url_template: str = ""
     require_sel: str = ""
     more_selector: str = ""
@@ -70,10 +72,13 @@ def _course_id(card, link_href: str, spec: SiteSpec) -> str:
         target = card.query_selector(spec.id_sel) if spec.id_sel else card
         v = target.get_attribute(spec.id_attr) if target else None
         if v:
-            if "(" in v:                       # onclick 등 함수호출 → 첫 인자
-                m = _ID_IN_CALL.search(v)
+            if "(" in v:                       # onclick 등 함수호출 → 지정한 위치의 인자
+                m = _ID_CALL_ARGS.search(v)
                 if m:
-                    return m.group(1)
+                    args = [a.strip().strip("'\"") for a in m.group(1).split(",")]
+                    idx = spec.id_call_arg
+                    if 0 <= idx < len(args) and args[idx]:
+                        return args[idx]
             else:
                 return v
     if link_href:

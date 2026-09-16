@@ -26,6 +26,12 @@ SITES = {
         "https://www.teacher.co.kr/index.do/apply/list4/",
         "https://www.teacher.co.kr/index.do/apply/list6/",
     ],
+    # 하이컨텐츠: inx=1&jnx=0(직무연수 전체, jnx=1~4는 jnx=0의 부분집합이라 불필요 — 실측 확인)과
+    # inx=2(자율연수, 직무연수와 겹치지 않음 — 실측 확인)만 있으면 전체 커버. page_count로 페이지네이션.
+    "하이컨텐츠": (
+        [f"https://www.hicontents.net/main/sub2.asp?inx=1&jnx=0&page_count={p}" for p in range(1, 13)]
+        + [f"https://www.hicontents.net/main/sub2.asp?inx=2&jnx=0&page_count={p}" for p in range(1, 13)]
+    ),
 }
 
 # 유니텔: list_url별 학점(위 목록과 순서 대응) — 카드 자체엔 학점 표기가 없어 URL로 구분.

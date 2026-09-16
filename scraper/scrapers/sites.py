@@ -148,6 +148,28 @@ UNITEL = SiteSpec(
     more_selector="",
 )
 
+# ── 하이컨텐츠 ── 한국교원/교육사랑과 같은 제작사 플랫폼(detail_view(gcode)) + 번호식 페이지네이션.
+# 카드: div.box_event01 / 분야: .eduCateSpan / 학점표시는 제목과 같은 줄의 앞쪽 span이라
+# name_sel을 "padding-left:15px인 td 안의 마지막 .mg"로 좁혀 학점 대괄호(별도 span)를 자연히 제외.
+# id는 "상세보기" 버튼(.eduBtnDiv2On1)에서 뽑고 싶었지만, 페이지 HTML이 깨져있어 브라우저가
+# 파싱할 때 그 버튼이 카드 밖으로 밀려남(실측 확인) — 대신 카드 안에 제대로 중첩된 미리보기 링크
+# (.imgover, onclick="quick_request_eventmenu('n0000n0000','s0851',...)")의 2번째 인자를 사용.
+HICONTENTS = SiteSpec(
+    site="하이컨텐츠",
+    list_url=config.SITES["하이컨텐츠"],
+    wait_selector="div.box_event01",
+    card="div.box_event01",
+    require_sel=".eduCateTd",   # 상단 "추천과정" 위젯(같은 클래스 재사용)에는 분야 태그가 없어 제외됨
+    name_sel="td[style*='padding-left:15px'] .mg:last-of-type",
+    field_sel=".eduCateSpan",
+    id_sel=".imgover",
+    id_attr="href",   # href="javascript:quick_request_eventmenu('n0000n0000','s0851',...)" — onclick 아님
+    id_call_arg=1,
+    url_template="https://www.hicontents.net/main/subject_view.asp?gcode={id}",
+    more_selector="",
+    http_html=True,
+)
+
 SPECS = {
     "티처빌": TEACHERVILLE,
     "아이스크림": ISCREAM,
@@ -158,4 +180,5 @@ SPECS = {
     "카운피아": COUNPIA,
     "에듀니티": EDUNIETY,
     "유니텔": UNITEL,
+    "하이컨텐츠": HICONTENTS,
 }
