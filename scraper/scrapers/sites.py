@@ -66,9 +66,28 @@ EDUCATION = SiteSpec(
     more_selector="",
 )
 
+# ── 교육사랑 ── 카드: div.lecture-box / 학점·차시는 카드 전체 텍스트에서 파싱 / onclick detail_view('gcode')
+# 한국교원과 같은 제작사 플랫폼(같은 detail_view 패턴)이지만, 여기는 예외 없이 항상
+# subject_view.asp?gcode=...&inx=1&jnx=0 로 고정. 실제 브라우저 접속은 "지원되는 Browser가 아닙니다"로
+# 차단되지만(자동화 탐지로 추정) 순수 HTTP GET은 막히지 않아 http_html 모드로 우회.
+EDULOVE = SiteSpec(
+    site="교육사랑",
+    list_url=config.SITES["교육사랑"],
+    wait_selector="div.lecture-box",
+    card="div.lecture-box",
+    name_sel=".subject_title1",
+    field_sel=".flag-cate",
+    id_sel=".subject_title1",
+    id_attr="onclick",
+    url_template="https://www.edulove.co.kr/main/subject_view.asp?gcode={id}&inx=1&jnx=0",
+    more_selector="",
+    http_html=True,
+)
+
 SPECS = {
     "티처빌": TEACHERVILLE,
     "아이스크림": ISCREAM,
     "한국교원": HSTUDY,
     "사제동행": EDUCATION,
+    "교육사랑": EDULOVE,
 }

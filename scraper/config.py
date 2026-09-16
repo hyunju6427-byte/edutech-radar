@@ -6,6 +6,7 @@ SITES = {
     "아이스크림": "https://teacher.i-scream.co.kr/course/crs/creditList.do?searchOrdinalTyCode=TY01&searchOrderField=NEW",
     "한국교원": "https://www.hstudy.co.kr/newmain/sub2.asp",
     "사제동행": "https://www.education.or.kr/studyjob/course.asp?sec=GNBL&tabId=JTSYV",
+    "교육사랑": "https://www.edulove.co.kr/main/sub2.asp?inx=1&jnx=0",
 }
 
 # Playwright 동작
