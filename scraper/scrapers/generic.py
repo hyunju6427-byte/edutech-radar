@@ -54,6 +54,8 @@ class SiteSpec:
     more_selector: str = ""
     http_html: bool = False   # True면 브라우저 대신 직접 HTTP로 HTML을 받아 파싱(봇 차단 우회)
     name_strip_re: str = ""   # 과정명에 붙는 사이트 고유 꼬리표 제거용 정규식(예: 에듀니티 "[상시연수]"/"-직무")
+    list_url_credit: dict = None   # {url: "학점값"} — 카드에 학점 표기가 없고 목록 URL(카테고리) 자체가
+                                    # 학점을 의미하는 사이트용(예: 유니텔 list3=2학점). 파싱된 학점이 없을 때만 적용.
 
 
 def _txt(node, sel: str) -> str:
@@ -153,9 +155,13 @@ def run_spec(spec: SiteSpec) -> list[Course]:
 
                 open_month = parse_open_month(_txt(card, spec.open_month_sel) or raw)
 
+                credit = parse_credit(meta_text)
+                if not credit and spec.list_url_credit:
+                    credit = spec.list_url_credit.get(list_url, "")
+
                 out.append(Course(
                     site=spec.site, name=name,
-                    credit=parse_credit(meta_text), hours=parse_hours(meta_text),
+                    credit=credit, hours=parse_hours(meta_text),
                     field_name=_txt(card, spec.field_sel),
                     open_month=open_month or this_month,
                     url=url, course_id=cid, raw_text=raw[:500], first_seen=today,

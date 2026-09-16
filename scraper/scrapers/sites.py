@@ -132,6 +132,22 @@ EDUNIETY = SiteSpec(
     more_selector="",
 )
 
+# ── 유니텔 ── 옛날 테이블 레이아웃, 카드: tr:has(a.renew) / onclick viewCourse('코드')
+# 학점 표기가 행 안에 없고 목록 URL(카테고리)이 곧 학점 — config.UNITEL_LIST_CREDIT 참고.
+# 시간 정보도 목록에 없어 공란(상세페이지까지 들어가야 하는데 카탈로그 전체엔 부담이 커 보류).
+UNITEL = SiteSpec(
+    site="유니텔",
+    list_url=config.SITES["유니텔"],
+    list_url_credit=config.UNITEL_LIST_CREDIT,
+    wait_selector="a.renew",
+    card="tr:has(a.renew)",
+    name_sel="a.renew",
+    id_sel="a.renew",
+    id_attr="onclick",
+    url_template="https://www.teacher.co.kr/index.do/apply/view_course/{id}",
+    more_selector="",
+)
+
 SPECS = {
     "티처빌": TEACHERVILLE,
     "아이스크림": ISCREAM,
@@ -141,4 +157,5 @@ SPECS = {
     "T셀파": TSHERPA,
     "카운피아": COUNPIA,
     "에듀니티": EDUNIETY,
+    "유니텔": UNITEL,
 }

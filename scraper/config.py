@@ -18,6 +18,23 @@ SITES = {
         "https://counpia.com/ncs/main.html?category_id=A00010005&parent_two=A000100050002",
     ],
     "에듀니티": "https://happy.eduniety.net/html/online/list/?isonoff=ON",
+    # 유니텔은 카드 안에 학점 표기가 없고, 목록 URL(list1~4=직무 4~1학점, list6=자율연수) 자체가 학점을 의미한다.
+    "유니텔": [
+        "https://www.teacher.co.kr/index.do/apply/list1/",
+        "https://www.teacher.co.kr/index.do/apply/list2/",
+        "https://www.teacher.co.kr/index.do/apply/list3/",
+        "https://www.teacher.co.kr/index.do/apply/list4/",
+        "https://www.teacher.co.kr/index.do/apply/list6/",
+    ],
+}
+
+# 유니텔: list_url별 학점(위 목록과 순서 대응) — 카드 자체엔 학점 표기가 없어 URL로 구분.
+UNITEL_LIST_CREDIT = {
+    "https://www.teacher.co.kr/index.do/apply/list1/": "4",
+    "https://www.teacher.co.kr/index.do/apply/list2/": "3",
+    "https://www.teacher.co.kr/index.do/apply/list3/": "2",
+    "https://www.teacher.co.kr/index.do/apply/list4/": "1",
+    "https://www.teacher.co.kr/index.do/apply/list6/": "자율",
 }
 
 # Playwright 동작
