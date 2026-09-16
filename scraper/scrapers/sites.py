@@ -84,10 +84,27 @@ EDULOVE = SiteSpec(
     http_html=True,
 )
 
+# ── T셀파 ── 카드: ul.tla_list > li / 학점 표기 없음(시간만) / onclick detail(2014) 숫자ID
+# 목록 페이지가 서버에서 이미 전체 렌더링돼 있어 더보기/스크롤 불필요(정적 HTML에도 카드 존재 확인).
+TSHERPA = SiteSpec(
+    site="T셀파",
+    list_url=config.SITES["T셀파"],
+    wait_selector="ul.tla_list",
+    card="#productListArea ul.tla_list li",
+    name_sel=".tla_msg a",
+    field_sel="",
+    meta_sel="",   # "N시간"만 있고 학점 표기가 따로 없어 카드 전체 텍스트에서 파싱
+    id_sel=".tla_msg a",
+    id_attr="onclick",
+    url_template="https://edu.tsherpa.co.kr/Product/Detail/{id}",
+    more_selector="",
+)
+
 SPECS = {
     "티처빌": TEACHERVILLE,
     "아이스크림": ISCREAM,
     "한국교원": HSTUDY,
     "사제동행": EDUCATION,
     "교육사랑": EDULOVE,
+    "T셀파": TSHERPA,
 }

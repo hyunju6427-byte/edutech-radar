@@ -12,7 +12,9 @@ from scrapers.base import (browser_page, load_all, clean,
                            parse_credit, parse_hours, parse_open_month)
 
 _ID_IN_URL = re.compile(r"(?:classKey|courseSeq|crsId|crsCd|seq|code|id|no|key)=([\w-]+)", re.I)
-_ID_IN_CALL = re.compile(r"""['"]([\w-]+)['"]""")
+# onclick="fn('s1898')" 처럼 따옴표 있는 문자열 ID, onclick="fn(2014)" 처럼 따옴표 없는 숫자 ID 둘 다 지원.
+# 여는 괄호 바로 뒤 첫 인자에 고정해서(다른 곳의 우연한 단어와 잘못 매칭되는 것 방지).
+_ID_IN_CALL = re.compile(r"""\(\s*['"]?([\w-]+)['"]?\s*[,)]""")
 
 
 def _fetch_html(url: str) -> str:

@@ -7,6 +7,7 @@ SITES = {
     "한국교원": "https://www.hstudy.co.kr/newmain/sub2.asp",
     "사제동행": "https://www.education.or.kr/studyjob/course.asp?sec=GNBL&tabId=JTSYV",
     "교육사랑": "https://www.edulove.co.kr/main/sub2.asp?inx=1&jnx=0",
+    "T셀파": "https://edu.tsherpa.co.kr/Product/List/",
 }
 
 # Playwright 동작
