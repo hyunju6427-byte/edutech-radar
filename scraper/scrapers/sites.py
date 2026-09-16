@@ -100,6 +100,22 @@ TSHERPA = SiteSpec(
     more_selector="",
 )
 
+# ── 카운피아 ── 카드: div.lecture_list[data-course-id] / 학점(차시)는 .sort 안에 표기
+# list_url이 리스트(카테고리별 페이지 6개) — config.py 참고. 카테고리당 카드 수가 16으로 고르게
+# 찍히는 곳이 있어 페이지당 상한(더보기/페이지네이션)이 있을 가능성 있음 — 추후 숫자가 안 늘면 재점검.
+COUNPIA = SiteSpec(
+    site="카운피아",
+    list_url=config.SITES["카운피아"],
+    wait_selector="div.lecture_list",
+    card="div.lecture_list",
+    name_sel=".tit",
+    meta_sel=".sort",           # "1학점(15차시)"
+    field_sel=".ncs_3cha",
+    id_attr="data-course-id",
+    url_template="https://counpia.com/ncs/main_lecture.html?course_id={id}",
+    more_selector="",
+)
+
 SPECS = {
     "티처빌": TEACHERVILLE,
     "아이스크림": ISCREAM,
@@ -107,4 +123,5 @@ SPECS = {
     "사제동행": EDUCATION,
     "교육사랑": EDULOVE,
     "T셀파": TSHERPA,
+    "카운피아": COUNPIA,
 }
