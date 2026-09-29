@@ -1,5 +1,5 @@
 @echo off
-REM Local collector for hstudy (Korean-IP-only site) + commit/push the result file.
+REM Local collector for Korea-IP-only sites (hstudy, edulove, tsherpa) plus commit and push.
 REM Registered in Windows Task Scheduler to run daily, a bit before the
 REM GitHub Actions workflow (08:00 KST). Log accumulates in hstudy_task.log.
 
@@ -12,14 +12,14 @@ cd /d "%REPO%"
 
 echo ==== %date% %time% ==== >> "%LOG%"
 
-"%PYTHON%" scraper\hstudy_only.py >> "%LOG%" 2>&1
+"%PYTHON%" scraper\local_only.py >> "%LOG%" 2>&1
 if errorlevel 1 (
-    echo hstudy_only.py failed, skipping commit >> "%LOG%"
+    echo local_only.py failed on every site, skipping commit >> "%LOG%"
     goto :eof
 )
 
-"%GITEXE%" add data\hstudy_raw.json >> "%LOG%" 2>&1
-"%GITEXE%" commit -m "hstudy local collect (%date%)" >> "%LOG%" 2>&1
+"%GITEXE%" add data\hstudy_raw.json data\edulove_raw.json data\tsherpa_raw.json >> "%LOG%" 2>&1
+"%GITEXE%" commit -m "local collect (%date%)" >> "%LOG%" 2>&1
 
 REM GitHub Actions usually commits to main around the same time (08:00 KST) - sync with
 REM the remote before pushing or this fails silently every day the two race each other

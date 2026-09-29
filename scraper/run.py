@@ -57,10 +57,17 @@ VIVASAM_SEED_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'vivas
 # 자동 수집에서 제외할 연수원(기존 데이터는 대시보드에 그대로 남음).
 SKIP_SITES = []
 
-# 한국교원(hstudy): GitHub Actions 서버 IP가 사이트에서 차단돼 있어 직접 수집이 안 된다.
-# 대신 국내 IP(사용자 PC)에서 hstudy_only.py로 매일 미리 수집해둔 파일을 여기서 읽어 병합한다.
+# GitHub Actions 서버(해외 IP)에서 접근이 막히거나 응답이 없는 사이트들 — 대신 국내 IP(사용자 PC)
+# 에서 local_only.py로 매일 미리 수집해둔 파일을 여기서 읽어 병합한다. 한국교원은 예전부터 알려진
+# IP 차단, 교육사랑·T셀파는 2026-09-29 Actions 로그에서 매 실행 60초 타임아웃으로 실패하는 걸 확인해 추가
+# (국내 IP에선 둘 다 정상 응답 — 크롤링 로직 문제가 아니라 순수 접속 문제였음).
 # 파일이 없거나 PREFETCH_MAX_AGE_HOURS보다 오래됐으면 이번 실행은 건너뛰고 기존 데이터를 유지한다.
-PREFETCHED_SITES = {'한국교원': os.path.join(os.path.dirname(__file__), '..', 'data', 'hstudy_raw.json')}
+_DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'data')
+PREFETCHED_SITES = {
+    '한국교원': os.path.join(_DATA_DIR, 'hstudy_raw.json'),
+    '교육사랑': os.path.join(_DATA_DIR, 'edulove_raw.json'),
+    'T셀파': os.path.join(_DATA_DIR, 'tsherpa_raw.json'),
+}
 PREFETCH_MAX_AGE_HOURS = 30   # 매일 08:00 KST 실행 기준(하루+여유)
 
 # 전체수집 전환 시 '오늘'로 잘못 찍힌 대량유입분 정리용(일회성).
