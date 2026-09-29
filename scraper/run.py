@@ -16,13 +16,14 @@ sys.path.insert(0, os.path.dirname(__file__))
 import config
 from scrapers.generic import run_spec
 from scrapers.sites import SPECS
+from scrapers import vivasam
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'courses.json')
 
 # ── 종료 자동정리 설정 ─────────────────────────────────────────
 # 전체 목록을 '빠짐없이' 긁는 사이트만 넣는다(아니면 정상 과정이 매번 미노출로 잡혀 오판).
 # 처음엔 비워두고, 운영하며 확신이 서면 예: ['사제동행','한국교원'] 추가.
-FULL_CATALOG_SITES = ['티처빌', '사제동행', '아이스크림', '교육사랑', 'T셀파', '카운피아', '에듀니티', '유니텔', '하이컨텐츠']  # 종료 자동정리 대상
+FULL_CATALOG_SITES = ['티처빌', '사제동행', '아이스크림', '교육사랑', 'T셀파', '카운피아', '에듀니티', '유니텔', '하이컨텐츠', '비바샘']  # 종료 자동정리 대상
 # (아이스크림은 예전엔 이름 불일치로 제외했으나, norm_loose 보조매칭 도입 후 재활성화 — 2026-09-11)
 # (교육사랑은 신규 연동 — 기존 엑셀데이터 146건 중 119건이 실수집 결과와 정확히 일치해 바로 포함 — 2026-09-14)
 # (T셀파도 신규 연동 — 기존 엑셀데이터 93건 중 48건이 실수집 결과와 정확히 일치해 바로 포함 — 2026-09-16)
@@ -31,6 +32,8 @@ FULL_CATALOG_SITES = ['티처빌', '사제동행', '아이스크림', '교육사
 # (유니텔도 신규 연동 — list_url_credit으로 카테고리별 학점 매핑, 41/67건 일치해 바로 포함 — 2026-09-16)
 # (하이컨텐츠도 신규 연동 — 번호식 페이지네이션 24페이지 순회, 259건 수집(직무+자율 중복 제목은 병합
 #  시 _key로 자연히 합쳐짐), 기존 96건과 다수 일치해 바로 포함 — 2026-09-16)
+# (비바샘도 신규 연동 — 시드 병합이 아니라 실제 공개 API(scrapers/vivasam.py)로 직접 수집,
+#  기존 265건 중 200건이 정확히 일치해 바로 포함 — 2026-09-29)
 GRACE_RUNS = 2   # 연속 N회 미노출 시 종료 확정
 # 일회성: 여기 넣은 연수원의 '종료' 딱지를 전부 '서비스중'으로 되돌린다(정리 후 [] 로 비우면 됨).
 RESET_ENDED_SITES = []
@@ -42,6 +45,8 @@ BACKFILL_APPEND_SITES = []
 # 처음 잡힌 것"이 전부 "오늘 신규"로 잘못 찍혀 95건 정리함(BULK_THRESHOLD=30 미만이라 대량유입
 # 안전장치를 피해감). 같은 김에 아이스크림도 안정화 후 빠뜨렸던 걸 제거함(방치되면 매일 진짜 신규가
 # 하루 만에 '기존'으로 되돌아가 신규 오픈일 정보가 유실됨 — 그동안 며칠치는 이미 유실됨). 정리 끝.
+# 2026-09-29: 비바샘을 시드 병합에서 실제 API 수집으로 바꾸며 선제 적용해봤는데, 신규 32건이
+# BULK_THRESHOLD(30)를 넘어 자동으로 대량유입 처리돼 애초에 리셋할 게 없었음(확인 후 비움).
 RESET_NEW_SITES = []
 # 일회성: 상세 URL 로직이 없던 시절 목록페이지 URL이 잘못 채워진 값을 비운다(정리 후 [] 로 비우면 됨).
 # (해당 사이트의 url_template이 준비되면 다음 실행부터 진짜 상세 URL로 다시 채워짐)
@@ -168,11 +173,17 @@ def main():
         if cu:
             print(f'[정리] {CLEAN_FAKE_URL_SITES} 목록URL 오채움 {cu}건 → 비움')
 
-    for name, spec in SPECS.items():
+    for name, spec in list(SPECS.items()) + [('비바샘', None)]:
         if name in SKIP_SITES:
             print(f'[{name}] 자동수집 제외(SKIP_SITES) — 기존 데이터 유지')
             continue
-        if name in PREFETCHED_SITES:
+        if name == '비바샘':
+            try:
+                courses = vivasam.collect()
+            except Exception as e:
+                print(f'[{name}] 수집 오류: {e}')
+                continue
+        elif name in PREFETCHED_SITES:
             courses = load_prefetched(name, PREFETCHED_SITES[name])
             if courses is None:
                 continue
