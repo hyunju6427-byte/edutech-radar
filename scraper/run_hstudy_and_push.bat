@@ -20,6 +20,18 @@ if errorlevel 1 (
 
 "%GITEXE%" add data\hstudy_raw.json >> "%LOG%" 2>&1
 "%GITEXE%" commit -m "hstudy local collect (%date%)" >> "%LOG%" 2>&1
+
+REM GitHub Actions usually commits to main around the same time (08:00 KST) - sync with
+REM the remote before pushing or this fails silently every day the two race each other
+REM (this happened for real 2026-09-22 ~ 2026-09-29, commits piled up unpushed).
+"%GITEXE%" fetch origin >> "%LOG%" 2>&1
+"%GITEXE%" rebase origin/main >> "%LOG%" 2>&1
+if errorlevel 1 (
+    echo git rebase failed - aborting rebase, leaving local commit unpushed for manual look >> "%LOG%"
+    "%GITEXE%" rebase --abort >> "%LOG%" 2>&1
+    goto :eof
+)
+
 "%GITEXE%" push >> "%LOG%" 2>&1
 
 echo. >> "%LOG%"
