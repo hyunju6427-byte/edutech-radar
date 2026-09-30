@@ -1,6 +1,7 @@
 """스크레이퍼 공통 기반: 브라우저 컨텍스트 + 한국어 텍스트 파서."""
 from __future__ import annotations
 
+import html
 import re
 from contextlib import contextmanager
 
@@ -49,7 +50,11 @@ def parse_open_month(text: str) -> str:
 
 
 def clean(text: str) -> str:
-    return re.sub(r"\s+", " ", (text or "").replace("\xa0", " ")).strip()
+    # local_only.py처럼 브라우저 없이 원본 HTML을 정규식으로 직접 파싱하는 경로는 &amp; 같은
+    # HTML 엔티티가 그대로 남아있어 unescape 필요(Playwright의 inner_text()는 이미 디코딩된
+    # 텍스트를 주므로 여기서 한 번 더 unescape해도 영향 없음 — 항상 안전).
+    text = html.unescape(text or "")
+    return re.sub(r"\s+", " ", text.replace("\xa0", " ")).strip()
 
 
 _UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "

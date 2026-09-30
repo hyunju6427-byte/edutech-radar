@@ -24,6 +24,11 @@ UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
 # 비교 축이 다르다고 보고 제외(다른 9개 사이트도 직무+자율 위주로만 수집 중인 것과 동일 기준).
 CATEGORIES = {"010": "job", "020": "self"}
 
+# 주제(분야) 태그 중 제외할 것들 — 특정 연수 상품 라인 이름일 뿐 실제 '주제' 분류가 아니라고
+# 판단(사용자 요청, 2026-09). 한 과정이 이 태그만 갖고 있으면 주제가 빈 값이 될 수 있음(다른
+# 사이트들도 주제 정보가 없는 경우가 흔해 문제없음).
+EXCLUDE_FIELDS = {"샘크리에이티브 연수", "에듀테크 활용연수"}
+
 
 def _fetch_page(crs_clsf_se_cd: str, page: int) -> dict:
     url = f"{API_URL}?crsClsfSeCd={crs_clsf_se_cd}&page={page}&searchCrdtCd=&sortOrdrType=new"
@@ -57,7 +62,10 @@ def collect() -> list[Course]:
                     continue
                 seen_ids.add(cid)
                 meta = row.get("crdtNm") or ""          # 예: "15차시(1학점)"
-                field = row.get("trnSubjNm") or row.get("stdtrShpNmList") or ""
+                field_raw = row.get("trnSubjNm") or row.get("stdtrShpNmList") or ""
+                field = ", ".join(
+                    t for t in (p.strip() for p in field_raw.split(",")) if t and t not in EXCLUDE_FIELDS
+                )
                 out.append(Course(
                     site="비바샘", name=name,
                     credit=parse_credit(meta), hours=parse_hours(meta),
